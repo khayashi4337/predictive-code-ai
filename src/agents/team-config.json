@@ -1,0 +1,132 @@
+{
+  "team_configuration": {
+    "project_name": "分散自律層ネットワーク予測コードAIシステム",
+    "version": "1.0.0",
+    "description": "TypeScriptベースの予測コードAIシステムにおけるチーム開発体制設定",
+    "created_date": "2025-08-10",
+    "methodology": "アジャイル・スクラム + TDD（テスト駆動開発）"
+  },
+  "agent_registry": [
+    {
+      "agent_id": "ceo-agent",
+      "config_path": "./configs/ceo-agent.json",
+      "role": "エグゼクティブ",
+      "status": "active",
+      "responsibilities": ["戦略決定", "アーキテクチャ承認", "リスク管理"]
+    },
+    {
+      "agent_id": "pm-agent", 
+      "config_path": "./configs/pm-agent.json",
+      "role": "プロジェクトマネージャー",
+      "status": "active",
+      "responsibilities": ["スケジュール管理", "チーム調整", "品質ゲート"]
+    },
+    {
+      "agent_id": "backend-engineer-agent",
+      "config_path": "./configs/backend-engineer-agent.json",
+      "role": "バックエンドエンジニア",
+      "status": "active",
+      "responsibilities": ["コアシステム実装", "API設計", "パフォーマンス最適化"]
+    },
+    {
+      "agent_id": "frontend-engineer-agent",
+      "config_path": "./configs/frontend-engineer-agent.json", 
+      "role": "フロントエンドエンジニア",
+      "status": "active",
+      "responsibilities": ["UI/UX実装", "可視化システム", "ユーザビリティ"]
+    },
+    {
+      "agent_id": "test-team-agent",
+      "config_path": "./configs/test-team-agent.json",
+      "role": "テストエンジニア",
+      "status": "active",
+      "responsibilities": ["品質保証", "テスト自動化", "TDD支援"]
+    }
+  ],
+  "coordination_settings": {
+    "coordination_config_path": "./coordination/team-coordination.json",
+    "communication_protocols": "定義済み",
+    "escalation_matrix": "3レベル階層",
+    "meeting_schedule": "アジャイル標準"
+  },
+  "project_context": {
+    "system_architecture": "分散自律層ネットワーク",
+    "core_components": [
+      "自律層（感覚・パターン・概念・行動）",
+      "層間相対判定リンク",
+      "学習信号とメトリクス系統",
+      "海馬モジュール（経験管理）",
+      "視床ゲート（予測フィルタリング）",
+      "実行基盤（イベント処理）"
+    ],
+    "technology_stack": {
+      "language": "TypeScript",
+      "testing": "Jest（TDD）",
+      "build": "tsc + npm scripts",
+      "vcs": "Git + GitHub"
+    },
+    "development_stage": "基盤実装完了、上位層設計・実装中"
+  },
+  "quality_standards": {
+    "code_quality": {
+      "typescript_strict": true,
+      "test_coverage_minimum": "85%",
+      "code_review_required": true,
+      "automated_testing": true
+    },
+    "architecture_compliance": {
+      "layer_separation": "必須",
+      "dependency_injection": "推奨", 
+      "interface_consistency": "必須",
+      "performance_requirements": "応答時間<100ms"
+    }
+  },
+  "development_workflow": {
+    "sprint_duration": "2週間",
+    "planning_approach": "ストーリーポイント見積もり",
+    "review_process": "コードレビュー + 技術レビュー",
+    "deployment": "CI/CD パイプライン"
+  },
+  "success_metrics": {
+    "team_performance": [
+      "スプリント完了率 > 90%",
+      "品質ゲート通過率 > 95%",
+      "コミュニケーション効率性",
+      "技術的負債管理"
+    ],
+    "system_quality": [
+      "テストカバレッジ > 85%",
+      "バグ発見率の低減",
+      "パフォーマンス目標達成",
+      "アーキテクチャ適合性"
+    ]
+  },
+  "risk_management": {
+    "identified_risks": [
+      {
+        "category": "技術リスク",
+        "risks": ["複雑なアーキテクチャ", "パフォーマンス要件", "学習アルゴリズム精度"],
+        "mitigation": "定期レビュー、プロトタイピング、ベンチマーク"
+      },
+      {
+        "category": "プロジェクトリスク",
+        "risks": ["スコープクリープ", "チーム間調整", "技術的負債蓄積"],
+        "mitigation": "明確な責任分担、定期調整、継続的リファクタリング"
+      }
+    ],
+    "escalation_policy": "team-coordination.json で定義"
+  },
+  "future_extensions": {
+    "planned_enhancements": [
+      "CI/CDエージェントの追加",
+      "セキュリティ専門エージェント",
+      "DevOps・インフラエージェント",
+      "ユーザーサポートエージェント"
+    ],
+    "scalability_considerations": [
+      "エージェント設定のモジュール化",
+      "動的なチーム編成サポート",
+      "外部システム統合"
+    ]
+  }
+}

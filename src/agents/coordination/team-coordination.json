@@ -1,0 +1,295 @@
+{
+  "coordination_config": {
+    "version": "1.0.0",
+    "description": "分散自律層ネットワーク予測コードAI プロジェクトにおけるチーム連携とコミュニケーション設定",
+    "last_updated": "2025-08-10"
+  },
+  "team_structure": {
+    "hierarchy": {
+      "executive_level": {
+        "ceo-agent": {
+          "authority": "最終意思決定",
+          "scope": "プロジェクト全体戦略・アーキテクチャ承認・リスク管理"
+        }
+      },
+      "management_level": {
+        "pm-agent": {
+          "authority": "運用管理・調整",
+          "scope": "スケジュール・品質・チーム調整・進捗管理",
+          "reports_to": ["ceo-agent"]
+        }
+      },
+      "execution_level": {
+        "backend-engineer-agent": {
+          "authority": "技術実装",
+          "scope": "分散自律層システム・API・パフォーマンス",
+          "reports_to": ["pm-agent"]
+        },
+        "frontend-engineer-agent": {
+          "authority": "UI/UX実装",
+          "scope": "可視化・ダッシュボード・ユーザーインターフェース",
+          "reports_to": ["pm-agent"]
+        },
+        "test-team-agent": {
+          "authority": "品質保証",
+          "scope": "テスト戦略・自動化・品質ゲート",
+          "reports_to": ["pm-agent"]
+        }
+      }
+    },
+    "cross_functional_teams": [
+      {
+        "team_name": "アーキテクチャ委員会",
+        "members": ["ceo-agent", "backend-engineer-agent", "pm-agent"],
+        "purpose": "重要な技術的決定・設計レビュー・技術負債管理",
+        "meeting_frequency": "隔週・必要時"
+      },
+      {
+        "team_name": "品質保証委員会",
+        "members": ["pm-agent", "test-team-agent", "backend-engineer-agent", "frontend-engineer-agent"],
+        "purpose": "品質基準定義・テスト戦略・品質ゲート運用",
+        "meeting_frequency": "週次"
+      },
+      {
+        "team_name": "実装調整チーム",
+        "members": ["backend-engineer-agent", "frontend-engineer-agent", "test-team-agent"],
+        "purpose": "API設計・データ形式統一・統合テスト計画",
+        "meeting_frequency": "隔日・開発中"
+      }
+    ]
+  },
+  "communication_protocols": {
+    "meeting_types": [
+      {
+        "name": "デイリースタンドアップ",
+        "participants": ["pm-agent", "backend-engineer-agent", "frontend-engineer-agent", "test-team-agent"],
+        "duration": "15分",
+        "frequency": "日次（平日）",
+        "format": {
+          "agenda": ["昨日の進捗", "今日の予定", "ブロッカー・課題"],
+          "deliverables": ["進捗記録", "課題リスト", "調整事項"]
+        }
+      },
+      {
+        "name": "スプリントプランニング", 
+        "participants": ["pm-agent", "backend-engineer-agent", "frontend-engineer-agent", "test-team-agent"],
+        "duration": "2時間",
+        "frequency": "隔週（スプリント開始時）",
+        "format": {
+          "agenda": ["バックログレビュー", "ストーリーポイント見積もり", "タスク分解・割り当て", "スプリントゴール設定"],
+          "deliverables": ["スプリントバックログ", "完了定義", "リスク評価"]
+        }
+      },
+      {
+        "name": "技術レビュー会",
+        "participants": ["ceo-agent", "backend-engineer-agent", "frontend-engineer-agent", "pm-agent"],
+        "duration": "1時間",
+        "frequency": "重要実装完了時",
+        "format": {
+          "agenda": ["実装デモ", "アーキテクチャ説明", "パフォーマンス評価", "技術的課題討議"],
+          "deliverables": ["レビュー記録", "改善提案", "次期計画"]
+        }
+      },
+      {
+        "name": "スプリントレトロスペクティブ",
+        "participants": ["pm-agent", "backend-engineer-agent", "frontend-engineer-agent", "test-team-agent"],
+        "duration": "1時間",
+        "frequency": "隔週（スプリント終了時）",
+        "format": {
+          "agenda": ["Keep（続けること）", "Problem（課題）", "Try（改善案）"],
+          "deliverables": ["改善アクションプラン", "プロセス変更提案"]
+        }
+      }
+    ],
+    "escalation_matrix": [
+      {
+        "issue_type": "技術的課題",
+        "level_1": {
+          "handler": "backend-engineer-agent / frontend-engineer-agent",
+          "timeline": "即座～4時間",
+          "criteria": "個別コンポーネントの技術的問題"
+        },
+        "level_2": {
+          "handler": "pm-agent",
+          "timeline": "4時間～1日",
+          "criteria": "チーム間調整・スケジュール影響・リソース不足"
+        },
+        "level_3": {
+          "handler": "ceo-agent",
+          "timeline": "1日以内",
+          "criteria": "アーキテクチャ変更・戦略的判断・重大なリスク"
+        }
+      },
+      {
+        "issue_type": "品質問題",
+        "level_1": {
+          "handler": "test-team-agent",
+          "timeline": "即座～2時間",
+          "criteria": "テスト失敗・品質ゲート不適合"
+        },
+        "level_2": {
+          "handler": "pm-agent + 関連エンジニア",
+          "timeline": "2時間～8時間",
+          "criteria": "複数コンポーネントに影響・根本原因不明"
+        },
+        "level_3": {
+          "handler": "ceo-agent + 全チーム",
+          "timeline": "8時間以内",
+          "criteria": "システム全体の品質リスク・リリース延期の可能性"
+        }
+      }
+    ]
+  },
+  "collaboration_workflows": {
+    "feature_development": {
+      "phases": [
+        {
+          "phase": "要件分析",
+          "lead": "pm-agent",
+          "participants": ["ceo-agent", "backend-engineer-agent", "frontend-engineer-agent"],
+          "deliverables": ["ユーザーストーリー", "受入条件", "技術制約"],
+          "exit_criteria": "CEO承認・技術的実現可能性確認"
+        },
+        {
+          "phase": "設計",
+          "lead": "backend-engineer-agent",
+          "participants": ["frontend-engineer-agent", "test-team-agent"],
+          "deliverables": ["技術設計書", "API仕様", "データモデル"],
+          "exit_criteria": "設計レビュー通過・テスト計画承認"
+        },
+        {
+          "phase": "実装",
+          "lead": "backend-engineer-agent / frontend-engineer-agent",
+          "participants": ["test-team-agent"],
+          "deliverables": ["実装コード", "ユニットテスト", "統合テスト"],
+          "exit_criteria": "コードレビュー通過・品質ゲート通過"
+        },
+        {
+          "phase": "統合・検証",
+          "lead": "test-team-agent",
+          "participants": ["backend-engineer-agent", "frontend-engineer-agent"],
+          "deliverables": ["統合テスト結果", "パフォーマンステスト結果", "ユーザーテスト"],
+          "exit_criteria": "全品質ゲート通過・受入テスト完了"
+        }
+      ]
+    },
+    "bug_resolution": {
+      "workflow": [
+        {
+          "step": "バグ発見・報告",
+          "responsible": "test-team-agent",
+          "actions": ["再現手順確立", "影響度評価", "優先度設定"],
+          "escalation": "重大度によりpm-agent / ceo-agent"
+        },
+        {
+          "step": "原因調査・修正",
+          "responsible": "backend-engineer-agent / frontend-engineer-agent",
+          "actions": ["根本原因分析", "修正方針検討", "影響範囲評価"],
+          "collaboration": "test-team-agent（再現支援）"
+        },
+        {
+          "step": "修正検証",
+          "responsible": "test-team-agent",
+          "actions": ["修正確認", "回帰テスト", "影響箇所テスト"],
+          "sign_off": "pm-agent（リリース承認）"
+        }
+      ]
+    }
+  },
+  "knowledge_sharing": {
+    "documentation_standards": [
+      {
+        "type": "技術仕様書",
+        "owner": "backend-engineer-agent / frontend-engineer-agent",
+        "update_frequency": "実装変更時",
+        "review_cycle": "月次",
+        "audience": "開発チーム全体"
+      },
+      {
+        "type": "API ドキュメント",
+        "owner": "backend-engineer-agent",
+        "update_frequency": "API変更時",
+        "review_cycle": "リリース前",
+        "audience": "frontend-engineer-agent, test-team-agent"
+      },
+      {
+        "type": "テスト戦略書",
+        "owner": "test-team-agent",
+        "update_frequency": "スプリント開始時",
+        "review_cycle": "隔週",
+        "audience": "全チーム"
+      },
+      {
+        "type": "プロジェクト報告書",
+        "owner": "pm-agent",
+        "update_frequency": "週次",
+        "review_cycle": "継続的",
+        "audience": "ceo-agent, ステークホルダー"
+      }
+    ],
+    "training_initiatives": [
+      {
+        "topic": "TDD ベストプラクティス",
+        "trainer": "test-team-agent",
+        "participants": ["backend-engineer-agent", "frontend-engineer-agent"],
+        "frequency": "月次・必要時",
+        "format": "ハンズオン・コードレビュー"
+      },
+      {
+        "topic": "分散自律層アーキテクチャ",
+        "trainer": "backend-engineer-agent",
+        "participants": ["frontend-engineer-agent", "test-team-agent"],
+        "frequency": "重要更新時",
+        "format": "技術セッション・デモ"
+      }
+    ]
+  },
+  "performance_metrics": {
+    "team_collaboration": [
+      {
+        "metric": "コミュニケーション頻度",
+        "measurement": "会議参加率・チャット活動・コードレビュー頻度",
+        "target": "参加率95%以上・日次コミュニケーション"
+      },
+      {
+        "metric": "課題解決速度",
+        "measurement": "ブロッカー解決時間・エスカレーション頻度",
+        "target": "24時間以内解決80%・重大問題4時間以内エスカレーション"
+      },
+      {
+        "metric": "知識共有効率",
+        "measurement": "ドキュメント更新頻度・技術セッション実施回数",
+        "target": "月次更新・四半期2回以上の技術共有"
+      }
+    ],
+    "quality_collaboration": [
+      {
+        "metric": "コードレビュー品質",
+        "measurement": "レビューコメント数・修正反映率・品質向上度",
+        "target": "建設的コメント・90%以上の修正反映"
+      },
+      {
+        "metric": "統合効率",
+        "measurement": "統合エラー率・統合時間・依存関係問題",
+        "target": "統合エラー<5%・統合時間<30分"
+      }
+    ]
+  },
+  "tool_integration": {
+    "project_management": [
+      "GitHub Issues / Projects（タスク管理・進捗可視化）",
+      "GitHub Pull Requests（コードレビュー・品質ゲート）",
+      "GitHub Actions（CI/CD・自動テスト）"
+    ],
+    "communication": [
+      "Slack / Discord（日常コミュニケーション）",
+      "Zoom / Teams（定期会議・技術討議）",
+      "Notion / Confluence（ドキュメント管理）"
+    ],
+    "code_collaboration": [
+      "Git Workflow（feature branch・pull request）",
+      "Code Review Protocol（2人以上レビュー・自動チェック）",
+      "Continuous Integration（テスト自動実行・品質ゲート）"
+    ]
+  }
+}
