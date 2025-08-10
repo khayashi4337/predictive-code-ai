@@ -173,26 +173,6 @@ package "値オブジェクト群 / インデックス" as P2 {
       +取得(タグ: タグ): List<層間相対判定リンク<T>>
     }
   }
-
-  package "バッファ" as P2_Buffer {
-
-    class 期待パターンバッファ<T extends 付帯文脈> {
-      +get(): 期待パターン<T>
-      +put(期待: 期待パターン<T>): void
-      +clear(): void
-    }
-
-    class 実際パターンバッファ<T extends 付帯文脈> {
-      +get(): 実際パターン<T>
-      +put(実際: 実際パターン<T>): void
-      +clear(): void
-    }
-  }
-
-  ' （最小限の結線）各 自律層 からバッファを参照
-  自律層 o-- 期待パターンバッファ
-  自律層 o-- 実際パターンバッファ
-
 }
 
 '========================================
@@ -452,6 +432,111 @@ package "実行基盤（イベント＋層ごとフレーム）" as P7 {
   }
 }
 
+' === ここからパッチ：P8 に MCP/Connectors を追加（疎結合） ===
+
+package "ユーザIF/運用" as P8 {
+
+  package "連携(MCP/Connectors)" as P8_MCP {
+
+    interface Connector {
+      +id(): String
+      +kind(): String         ' "trading" | "notifier" | "marketdata" など
+      +tags(): Set<タグ>
+    }
+
+    interface TradingConnector extends Connector {
+      +placeOrder(req: OrderRequest): OrderResponse
+      +closeAll(symbol: String): OrderResponse
+      +positions(): String
+      +signal(msg: String): void
+    }
+
+    interface NotifierConnector extends Connector {
+      +notify(msg: String): void
+    }
+
+    interface MarketDataConnector extends Connector {
+      +subscribe(symbol: String): void
+      +unsubscribe(symbol: String): void
+    }
+
+    class MCPClient {
+      +handshake(): List<CapabilityDescriptor>
+      +invoke(toolName: String, argsJson: String): String
+      +subscribe(eventName: String): void
+    }
+
+    class CapabilityDescriptor {
+      name: String            ' 例: "order.place"
+      version: String
+      inputSchema: String     ' JSON Schema (文字列で保持)
+      outputSchema: String
+      付帯タグ: Set<タグ>
+    }
+
+    class ConnectorRegistry {
+      +register(c: Connector): void
+      +resolve(kind: String, tags: Set<タグ>): Connector
+      +byTag(tag: タグ): List<Connector>
+    }
+
+    class MCPToolBinding {
+      domainOp: String        ' 例: "placeOrder"
+      toolName: String        ' 例: "order.place"
+      inputMapping: String    ' JSONPath/テンプレ
+      outputMapping: String
+    }
+
+    class ExecutionRouter {
+      +routeOrder(profile: StrategyProfile, req: OrderRequest): TradingConnector
+      +routeNotify(tags: Set<タグ>): NotifierConnector
+      +routeMarket(tags: Set<タグ>): MarketDataConnector
+    }
+
+    class OrderRequest {
+      symbol: String
+      side: String            ' "buy" | "sell"
+      volume: double
+      price: double
+      sl: double
+      tp: double
+      timeInForce: String
+      tags: Set<タグ>
+    }
+
+    class OrderResponse {
+      orderId: String
+      status: String          ' accepted/filled/rejected 等
+      filled: double
+      message: String
+    }
+
+    class AuthCredential {
+      kind: String            ' "Bearer" | "APIKey" | ...
+      value: String
+    }
+
+    class CredentialVault {
+      +get(connectorId: String): AuthCredential
+      +put(connectorId: String, cred: AuthCredential): void
+    }
+
+    ' --- 参考実装（外部にある前提のモック型；任意） ---
+    class MQLTradingConnector {
+      endpoint: String
+    }
+    TradingConnector <|.. MQLTradingConnector
+
+    class LineNotifyConnector {
+      tokenAlias: String
+    }
+    NotifierConnector <|.. LineNotifyConnector
+
+  }
+
+}
+
+
 '========================================
 ' パッケージ間の高粒度の関係（クラス同士の細かい矢印は省略）
 P1_Links ..> P1_Metrics : 距離選択/Factory
@@ -469,6 +554,10 @@ P7_Event ..> P1_Links : Δイベント発火
 P7_Frame ..> P1_Layers : フレーム駆動の更新
 P7_Integrate ..> P1_Links : Δ統合/介入
 P7_Integrate ..> P2_LearnSignal : 履歴/メタ学習
+P8_MCP ..> P8_Commands : 運用コマンドからの実行委譲
+P8_MCP ..> P8_Alerts   : 通知経路（Line など）を疎結合で
+P8_MCP ..> P6_Action   : 取引I/Oを外部コネクタへブリッジ
+P8_MCP ..> P3_Input    : MarketData購読（任意）
 
 ' —— 縦並びのための隠し矢印 ——
 P1 -[hidden]down-> P2
@@ -479,6 +568,5 @@ P5 -[hidden]down-> P6
 P6 -[hidden]down-> P7
 
 @enduml
-
 
 ```
