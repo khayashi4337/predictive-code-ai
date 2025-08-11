@@ -1,15 +1,14 @@
 import { CosineDistance } from './CosineDistance';
-import { VectorizableExperience, DistanceMetricType } from './interfaces';
-import { ExpectedPattern } from '../pattern/ExpectedPattern';
-import { ActualPattern } from '../pattern/ActualPattern';
-import { AttachedInfo } from '../tag/AttachedInfo';
+import { VectorizableContext } from '../tag/VectorizableContext';
+import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
+import { ActualPatternV2 } from '../pattern/ActualPatternV2';
+import { ContextInfo } from '../tag/ContextInfo';
 import { Tag } from '../tag/Tag';
-import { TagType } from '../tag/TagType';
 
 /**
- * テスト用の数値ベクトル化可能なExperience実装
+ * テスト用の数値ベクトル化可能なContext実装
  */
-class TestVectorizableExperience implements VectorizableExperience {
+class TestVectorizableContext implements VectorizableContext {
   constructor(
     public readonly id: string,
     private vector: number[]
@@ -25,39 +24,39 @@ class TestVectorizableExperience implements VectorizableExperience {
 }
 
 /**
- * テスト用のAttachedInfoヘルパー関数
+ * テスト用のContextInfoヘルパー関数
  */
-function createAttachedInfo<T extends VectorizableExperience>(experience: T): AttachedInfo<T> {
+function createContextInfo<T extends VectorizableContext>(context: T): ContextInfo<T> {
   const tags = new Set([
-    new Tag('test', TagType.CONTEXT, 'test-tag', 1.0)
+    Tag.createString('test', 'test-tag')
   ]);
   
-  return new AttachedInfo(
-    experience,
-    tags,
-    { confidenceScore: 1.0, accuracy: 1.0, relevanceScore: 1.0 }
-  );
+  const statistics = new Map([
+    ['confidenceScore', 1.0]
+  ]);
+  
+  return new ContextInfo(context, tags, statistics);
 }
 
 describe('CosineDistance', () => {
-  let cosineDistance: CosineDistance<TestVectorizableExperience>;
+  let cosineDistance: CosineDistance<TestVectorizableContext>;
 
   beforeEach(() => {
-    cosineDistance = new CosineDistance<TestVectorizableExperience>();
+    cosineDistance = new CosineDistance<TestVectorizableContext>();
   });
 
   describe('基本機能', () => {
-    test('メトリクス名がCOSINEであること', () => {
-      expect(cosineDistance.getName()).toBe('COSINE');
+    test('メトリクス名がCosineであること', () => {
+      expect(cosineDistance.getName()).toBe('Cosine');
     });
 
     test('同一ベクトルの距離は0であること', () => {
       const vector = [1, 2, 3];
-      const experience = new TestVectorizableExperience('test', vector);
-      const attachedInfo = createAttachedInfo(experience);
+      const context = new TestVectorizableContext('test', vector);
+      const contextInfo = createContextInfo(context);
       
-      const expected = new ExpectedPattern('expected', attachedInfo);
-      const actual = new ActualPattern('actual', attachedInfo, 'test-context');
+      const expected = new ExpectedPatternV2(contextInfo);
+      const actual = new ActualPatternV2(contextInfo);
 
       const distance = cosineDistance.distance(expected, actual);
       expect(distance).toBeCloseTo(0, 10);

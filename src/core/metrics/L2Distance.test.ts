@@ -1,5 +1,5 @@
 import { L2Distance } from './L2Distance';
-import { VectorizableExperience, DistanceMetricType } from './interfaces';
+import { VectorizableExperience } from './interfaces';
 import { ExpectedPattern } from '../pattern/ExpectedPattern';
 import { ActualPattern } from '../pattern/ActualPattern';
 import { AttachedInfo } from '../tag/AttachedInfo';

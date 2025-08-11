@@ -1,32 +1,14 @@
-import { Experience } from '../tag/Experience';
-import { ExpectedPattern } from '../pattern/ExpectedPattern';
-import { ActualPattern } from '../pattern/ActualPattern';
+import { Context } from '../tag/Context';
+import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
+import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 
 /**
- * 数値ベクトル表現可能なExperienceインターフェース
- * 距離メトリクス計算のため数値ベクトルに変換可能な体験データ
- */
-export interface VectorizableExperience extends Experience {
-  /**
-   * 数値ベクトルに変換
-   * @returns 正規化された数値ベクトル配列
-   */
-  toVector(): number[];
-  
-  /**
-   * ベクトルの次元数を取得
-   * @returns ベクトルの次元数
-   */
-  getDimension(): number;
-}
-
-/**
- * 差分距離メトリクスインターフェース
- * 期待パターンと実際パターンの距離を計算する
+ * 差分距離メトリクスインターフェース（クラス図準拠版）
+ * クラス図P1_Metrics.DifferenceDistanceMetric<T extends Context>に対応
  * 
- * @template T - VectorizableExperience を継承する型
+ * @template T - Context を継承する型
  */
-export interface DifferenceDistanceMetric<T extends VectorizableExperience> {
+export interface DifferenceDistanceMetric<T extends Context> {
   /**
    * 期待パターンと実際パターン間の距離を計算
    * 
@@ -35,7 +17,7 @@ export interface DifferenceDistanceMetric<T extends VectorizableExperience> {
    * @returns 距離値（0以上の実数）
    * @throws Error 計算不可能な場合
    */
-  distance(expected: ExpectedPattern<T>, actual: ActualPattern<T>): number;
+  distance(expected: ExpectedPatternV2<T>, actual: ActualPatternV2<T>): number;
   
   /**
    * メトリクス名を取得
@@ -52,17 +34,19 @@ export interface DifferenceDistanceMetric<T extends VectorizableExperience> {
 }
 
 /**
- * 距離メトリクス種別列挙型
+ * 距離メトリクス種別列挙型（クラス図準拠版）
+ * クラス図P1_Metrics.DistanceMetricTypeに対応
  */
 export enum DistanceMetricType {
   L2 = 'L2',
-  COSINE = 'COSINE',
-  KL = 'KL',
+  Cosine = 'Cosine',
+  KL_Divergence = 'KL_Divergence',
   EMD = 'EMD'
 }
 
 /**
- * 距離メトリクスファクトリーインターフェース
+ * 距離メトリクスファクトリーインターフェース（クラス図準拠版）
+ * クラス図P1_Metrics.DistanceMetricFactoryに対応
  */
 export interface DistanceMetricFactory {
   /**
@@ -72,7 +56,7 @@ export interface DistanceMetricFactory {
    * @returns 距離メトリクスインスタンス
    * @throws Error サポートされていない種別の場合
    */
-  resolve<T extends VectorizableExperience>(type: DistanceMetricType): DifferenceDistanceMetric<T>;
+  resolve<T extends Context>(type: DistanceMetricType): DifferenceDistanceMetric<T>;
   
   /**
    * サポートされている距離メトリクス種別一覧を取得

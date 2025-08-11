@@ -4,3 +4,4 @@
 export { AdaptiveLearningRate, LearningRateOrigin } from './AdaptiveLearningRate';
 export { UpdateScope, ParameterRange } from './UpdateScope';
 export { LearningSignal, SignalType, SignalIntensity } from './LearningSignal';
+export { LearningSignal as LearningSignalV2 } from './LearningSignalV2';
