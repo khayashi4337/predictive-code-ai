@@ -1,5 +1,6 @@
 import { Context } from '../tag/Context';
 import { ContextInfo } from '../tag/ContextInfo';
+import { InterLayerRelativeJudgementLink } from '../links/InterLayerRelativeJudgementLink';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { LearningSignal } from '../learning/LearningSignalV2';
@@ -123,6 +124,9 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
   /** 最大統計履歴サイズ */
   protected readonly maxStatisticsHistory: number = 1000;
   
+  /** 上位層へのリンク */
+  protected readonly upstreamLinks: InterLayerRelativeJudgementLink<T>[] = [];
+  
   /**
    * コンストラクタ
    * 
@@ -170,12 +174,13 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
    * 予測モデルを更新
    * 基本的な統計更新を行い、具体的な処理は派生クラスに委譲
    */
-  public updatePredictiveModel(signal: LearningSignal<T>): void {
+  public async updatePredictiveModel(learningSignal: LearningSignal<T>): Promise<LearningSignal<T>[]> {
     const startTime = Date.now();
     
     try {
-      this.doUpdatePredictiveModel(signal);
+      const propagatedSignals = await this.doUpdatePredictiveModel(learningSignal);
       this.updateStatistics('update', Date.now() - startTime);
+      return propagatedSignals;
     } catch (error) {
       this.handleError('updatePredictiveModel', error as Error);
       throw error;
@@ -201,6 +206,14 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
    */
   public getLayerType(): string {
     return this.layerType;
+  }
+
+  /**
+   * 上位層へのリンクを追加します。
+   * @param link - 上位層へのリンク
+   */
+  public addUpstreamLink(link: InterLayerRelativeJudgementLink<T>): void {
+    this.upstreamLinks.push(link);
   }
   
   /**
@@ -271,7 +284,9 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
    * 予測モデル更新の具体的な実装（サブクラスでオーバーライド）
    * @param signal - 学習信号
    */
-  protected abstract doUpdatePredictiveModel(signal: LearningSignal<T>): void;
+  protected async doUpdatePredictiveModel(_learningSignal: LearningSignal<T>): Promise<LearningSignal<T>[]> {
+    return []; // デフォルトでは伝播する信号はない
+  }
   
   /**
    * 統計情報を更新

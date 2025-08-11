@@ -5,6 +5,7 @@ import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { RelativeDifference } from '../pattern/RelativeDifference';
 import { AdaptiveLearningRate } from '../learning/AdaptiveLearningRate';
 import { UpdateScope } from '../learning/UpdateScope';
+import { LearningSignal } from '../learning/LearningSignalV2';
 import { DifferenceDistanceMetric } from '../metrics/interfaces';
 import { LearningRatePolicy, UpdateScopePolicy, SkipPolicy } from './PolicyInterfaces';
 import { SkipEnum } from './SkipEnum';
@@ -474,4 +475,6 @@ export class InterLayerRelativeJudgementLink<T extends Context> {
     const stats = this.getStatistics();
     return `InterLayerLink[${this._linkId.substring(0, 8)}...](${this._upperLayerId}→${this._lowerLayerId}, judgements=${stats.totalJudgements})`;
   }
+
+
 }

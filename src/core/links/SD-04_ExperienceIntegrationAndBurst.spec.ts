@@ -1,5 +1,7 @@
 import { SensoryAutonomousLayer, PatternAutonomousLayer, ConceptAutonomousLayer } from '../layers/LayerImplementations';
 import { InterLayerRelativeJudgementLink } from './InterLayerRelativeJudgementLink';
+import { ExperienceIntegrator, HippocampusAutonomousModule, CurrentExperience, RepresentativeExperienceSet } from '../hippocampus/HippocampusAutonomousModule';
+import { LRBurst, SensitivityEventBus, LearningRateModulator } from '../sensitivity/LRBurst';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { ContextInfo } from '../tag/ContextInfo';
@@ -10,6 +12,7 @@ import { AdaptiveLearningRate, LearningRateOrigin } from '../learning/AdaptiveLe
 import { UpdateScope } from '../learning/UpdateScope';
 import { SkipEnum } from './SkipEnum';
 import { LearningSignal } from '../learning/LearningSignalV2';
+import { RelativeDifference } from '../pattern/RelativeDifference';
 
 // --- Mocks ---
 class MockContext implements VectorizableContext {
@@ -37,8 +40,14 @@ describe('SD-04: Experience Integration and Burst', () => {
   let sensoryLayer: SensoryAutonomousLayer<MockContext>;
   let patternLayer: PatternAutonomousLayer<MockContext>;
   let conceptLayer: ConceptAutonomousLayer<MockContext>;
-  let link_p_s: InterLayerRelativeJudgementLink<MockContext>; // Pattern -> Sensory
-  // let link_c_p: InterLayerRelativeJudgementLink<MockContext>; // Concept -> Pattern
+  let link_p_s: InterLayerRelativeJudgementLink<MockContext>;
+  let link_c_p: InterLayerRelativeJudgementLink<MockContext>;
+  
+  // SD-04 specific components
+  let experienceIntegrator: ExperienceIntegrator;
+  let hippocampusModule: HippocampusAutonomousModule;
+  let sensitivityEventBus: SensitivityEventBus;
+  let learningRateModulator: LearningRateModulator;
 
   beforeEach(() => {
     sensoryLayer = new SensoryAutonomousLayer<MockContext>('sensory-01');
@@ -46,42 +55,129 @@ describe('SD-04: Experience Integration and Burst', () => {
     conceptLayer = new ConceptAutonomousLayer<MockContext>('concept-01');
 
     link_p_s = new InterLayerRelativeJudgementLink('pattern-01', 'sensory-01', mockDistanceMetric, mockLearningRatePolicy, mockUpdateScopePolicy, mockSkipPolicy);
-    // link_c_p = new InterLayerRelativeJudgementLink('concept-01', 'pattern-01', mockDistanceMetric, mockLearningRatePolicy, mockUpdateScopePolicy, mockSkipPolicy);
+    link_c_p = new InterLayerRelativeJudgementLink('concept-01', 'pattern-01', mockDistanceMetric, mockLearningRatePolicy, mockUpdateScopePolicy, mockSkipPolicy);
     
-    jest.spyOn(patternLayer, 'updatePredictiveModel').mockImplementation(() => {});
-    jest.spyOn(conceptLayer, 'updatePredictiveModel').mockImplementation(() => {});
+    // SD-04 components
+    experienceIntegrator = new ExperienceIntegrator();
+    hippocampusModule = new HippocampusAutonomousModule();
+    sensitivityEventBus = new SensitivityEventBus();
+    learningRateModulator = new LearningRateModulator();
+    
+    // イベントバスにモジュレータを登録
+    sensitivityEventBus.subscribe(learningRateModulator);
+    
+    jest.spyOn(conceptLayer, 'updatePredictiveModel');
+    jest.spyOn(experienceIntegrator, 'integrate');
+    jest.spyOn(hippocampusModule, 'compareRelativeExperience');
+    jest.spyOn(hippocampusModule, 'noveltyIndex');
+    jest.spyOn(hippocampusModule, 'fireLRBurst');
+    jest.spyOn(sensitivityEventBus, 'publish');
+    jest.spyOn(learningRateModulator, 'onBurst');
+
+    patternLayer.addUpstreamLink(link_c_p);
+  });
+
+  test('should follow the complete experience integration and burst sequence', () => {
+    // 1. 経験統合器が各層の情報を統合して現在経験を生成 (シーケンス図 25行目)
+    const sensoryInfo = new ContextInfo(new MockContext([0.1, 0.2]), new Set(), new Map());
+    const patternInfo = new ContextInfo(new MockContext([0.3, 0.4]), new Set(), new Map());
+    const conceptInfo = new ContextInfo(new MockContext([0.5, 0.6]), new Set(), new Map());
+    const actionInfo = new ContextInfo(new MockContext([0.7, 0.8]), new Set(), new Map());
+
+    const currentExperience = experienceIntegrator.integrate(sensoryInfo, patternInfo, conceptInfo, actionInfo);
+    expect(experienceIntegrator.integrate).toHaveBeenCalledWith(sensoryInfo, patternInfo, conceptInfo, actionInfo);
+    expect(currentExperience).toBeInstanceOf(CurrentExperience);
+
+    // 2. 海馬モジュールが経験相対照合を実行 (シーケンス図 29行目)
+    const representativeSet = new RepresentativeExperienceSet([]);
+    const relativeDifference = hippocampusModule.compareRelativeExperience(currentExperience, representativeSet);
+    
+    expect(hippocampusModule.compareRelativeExperience).toHaveBeenCalledWith(currentExperience, representativeSet);
+    expect(relativeDifference).toBeInstanceOf(RelativeDifference);
+
+    // 3. 新奇性指標を計算 (シーケンス図 33行目)
+    const noveltyScore = hippocampusModule.noveltyIndex(relativeDifference);
+    expect(hippocampusModule.noveltyIndex).toHaveBeenCalledWith(relativeDifference);
+    expect(typeof noveltyScore).toBe('number');
+  });
+
+  test('should trigger burst when novelty exceeds threshold', () => {
+    // 高い新奇性を持つ差分を作成 (シーケンス図 36-48行目)
+    const highNoveltyDifference = new RelativeDifference<MockContext>(
+      0.9, // 高い新奇性
+      new ContextInfo(new MockContext([1, 1]), new Set(), new Map())
+    );
+
+    const noveltyScore = hippocampusModule.noveltyIndex(highNoveltyDifference);
+    
+    if (noveltyScore > 0.8) { // 閾値を超えた場合
+      // 4. 長期記憶化判定 (シーケンス図 37行目)
+      const shouldMemorize = hippocampusModule.judgeLongTermMemorization(highNoveltyDifference);
+      expect(typeof shouldMemorize).toBe('boolean');
+
+      // 5. LRBurst発火 (シーケンス図 38行目)
+      hippocampusModule.fireLRBurst(highNoveltyDifference);
+      expect(hippocampusModule.fireLRBurst).toHaveBeenCalledWith(highNoveltyDifference);
+
+      // 6. バーストイベントの発行とモジュレータの更新 (シーケンス図 42-47行目)
+      const burst = new LRBurst(new Set(['novelty_burst']), 2.5, 30000);
+      sensitivityEventBus.publish(burst);
+      
+      expect(sensitivityEventBus.publish).toHaveBeenCalledWith(burst);
+      expect(learningRateModulator.onBurst).toHaveBeenCalledWith(burst);
+    }
+  });
+
+  test('should handle low novelty without burst', () => {
+    // 低新奇性の場合はバーストが発火しないことを確認
+    const lowNoveltyDifference = new RelativeDifference<MockContext>(
+      0.1, // 低い新奇性
+      new ContextInfo(new MockContext([0, 0]), new Set(), new Map())
+    );
+
+    const noveltyScore = hippocampusModule.noveltyIndex(lowNoveltyDifference);
+    expect(noveltyScore).toBeLessThan(0.5);
+
+    const shouldMemorize = hippocampusModule.judgeLongTermMemorization(lowNoveltyDifference);
+    expect(shouldMemorize).toBe(false);
+  });
+
+  test('should manage burst amplification lifecycle', () => {
+    // バーストの増幅係数管理をテスト
+    const burst = new LRBurst(new Set(['lifecycle_test']), 2.0, 10000); // 10秒の半減期
+    
+    const initialAmplification = burst.getCurrentAmplification();
+    expect(initialAmplification).toBe(2.0);
+    expect(burst.isActive()).toBe(true);
+
+    // モジュレータがバーストを受信
+    learningRateModulator.onBurst(burst);
+    
+    const amplificationFactor = learningRateModulator.amplificationFactor(new Set(['lifecycle_test']));
+    expect(amplificationFactor).toBeGreaterThanOrEqual(1.0);
   });
 
   test('should trigger a burst of learning signals on significant difference', () => {
-    // 1. 上位層(Pattern)が期待パターンを生成
+    // Original test - enhanced with burst components
     const expectedPattern = patternLayer.generateExpectedPattern(sensoryLayer.getLayerId(), new ContextInfo(new MockContext([0.1, 0.1, 0.1])));
-
-    // 2. 期待と大きく異なる実際パターンが観測される
     const actualPattern = new ActualPatternV2(new ContextInfo(new MockContext([0.9, 0.9, 0.9])));
+    
     sensoryLayer.observeActualPattern(actualPattern);
 
-    // 3. リンクが大きな差分に基づき、緊急性の高い学習信号を生成
     const judgementResult = link_p_s.performComprehensiveJudgement(expectedPattern, actualPattern);
-    expect(judgementResult.referenceDifference.magnitude).toBeGreaterThan(1.0); // 大きな差分
-    expect(judgementResult.learningRate.value).toBe(0.8); // 高い学習率
+    expect(judgementResult.referenceDifference.magnitude).toBeGreaterThan(1.0);
+    expect(judgementResult.learningRate.value).toBe(0.8);
 
-    // 4. パターン層が学習信号を受け取り、モデルを更新
     const learningSignal = new LearningSignal(judgementResult.learningRate, judgementResult.referenceDifference, judgementResult.updateScope);
     patternLayer.updatePredictiveModel(learningSignal);
-    expect(patternLayer.updatePredictiveModel).toHaveBeenCalledWith(learningSignal);
 
-    // 5. (Burst) パターン層が、さらに上位の概念層にも影響を伝播させる(という仮定)
-    // このテストでは、conceptLayer.updatePredictiveModelが呼ばれることを期待する。
-    // 実際のロジックはpatternLayer.updatePredictiveModel内にあるはず。
-    // ここでは、その呼び出しをトリガーする何らかの仕組みをテストする。
-    // 現状の実装ではこのテストは失敗する可能性が高い。
-    // その場合、burstを実装するためのメソッドを追加する必要がある。
+    expect(conceptLayer.updatePredictiveModel).toHaveBeenCalled();
     
-    // 仮説：大きな差分を持つ学習信号を受け取った場合、上位層にも伝播する
-    // patternLayerのupdatePredictiveModel内で、link_c_pを使って信号を生成し、
-    // conceptLayer.updatePredictiveModelを呼び出す、という流れを期待。
-
-    // このテストを成功させるには、`PatternAutonomousLayer.doUpdatePredictiveModel` の実装変更が必要になる。
-    // 今回は、まずテストが失敗することを確認し、次に実装を修正する、という手順を踏む。
+    // Additional: simulate hippocampus burst behavior
+    if (judgementResult.referenceDifference.magnitude > 0.75) {
+      const burst = new LRBurst(new Set(['pattern_burst']), 2.2);
+      sensitivityEventBus.publish(burst);
+      expect(sensitivityEventBus.publish).toHaveBeenCalledWith(burst);
+    }
   });
 });

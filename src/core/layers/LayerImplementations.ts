@@ -99,6 +99,9 @@ export class SensoryAutonomousLayer<T extends VectorizableContext> extends BaseA
       // 重みの範囲制限
       this.predictionWeights[i] = Math.max(-1, Math.min(1, this.predictionWeights[i]));
     }
+    return [];
+    return [];
+    return [];
   }
   
   /**
@@ -202,6 +205,8 @@ export class SensoryAutonomousLayer<T extends VectorizableContext> extends BaseA
  */
 export class PatternAutonomousLayer<T extends VectorizableContext> extends BaseAutonomousLayer<T> {
   
+  private readonly BURST_THRESHOLD = 0.75;
+  
   /** パターンテンプレート */
   private patternTemplates: Map<string, number[]> = new Map();
   
@@ -269,17 +274,51 @@ export class PatternAutonomousLayer<T extends VectorizableContext> extends BaseA
     // テンプレートを更新
     this.updatePatternTemplate(patternId, actual.body.toVector());
   }
-  
+
   /**
    * 予測モデルを更新
-   * パターンテンプレートと推移確率を調整
+   * パターンテンプレートと推移確率を調整し、必要に応じて上位層へバースト信号を伝播する
    */
-  protected doUpdatePredictiveModel(signal: LearningSignal<T>): void {
-    const learningRate = signal.adaptiveLearningRate.value;
-    const magnitude = signal.referenceDifference.magnitude;
-    
-    // パターンテンプレートの適応的調整
+  protected async doUpdatePredictiveModel(learningSignal: LearningSignal<T>): Promise<LearningSignal<T>[]> {
+    const magnitude = learningSignal.referenceDifference.magnitude;
+    const learningRate = learningSignal.adaptiveLearningRate.value;
+
+    // 内部モデル（パターンテンプレートと遷移確率）の適応
     this.adaptPatternTemplates(learningRate, magnitude);
+
+    const propagatedSignals: LearningSignal<T>[] = [];
+
+    if (magnitude > this.BURST_THRESHOLD) {
+      console.log(`Burst detected in Layer ${this.getLayerId()}! Propagating signal upwards.`);
+
+      const sourceContextInfo = learningSignal.referenceDifference.contextInfo;
+
+      // Create a representative pattern of the current state to serve as the 'actual' pattern for the upstream layer.
+      const currentStatePattern = this.getCurrentStateAsPattern();
+      const actualPatternForUpstream = new ActualPatternV2<T>(currentStatePattern, sourceContextInfo);
+
+      for (const link of this.upstreamLinks) {
+        const expectedPatternForUpstream = await this.generateExpectedPattern(link.getUpperLayerId(), sourceContextInfo);
+
+        const judgement = link.performComprehensiveJudgement(
+          expectedPatternForUpstream,
+          actualPatternForUpstream
+        );
+
+        if (judgement.shouldProcess) {
+          const propagatedSignal = new LearningSignal<T>(
+            judgement.learningRate,
+            judgement.referenceDifference,
+            judgement.updateScope,
+            `burst-from-${this.getLayerId()}`,
+            60000, // Default expiration
+            new Map([['source_signal_id', learningSignal.getSignalId()]])
+          );
+          propagatedSignals.push(propagatedSignal);
+        }
+      }
+    }
+    return propagatedSignals;
   }
   
   /**
@@ -440,6 +479,17 @@ export class PatternAutonomousLayer<T extends VectorizableContext> extends BaseA
    * @param learningRate - 学習率
    * @param magnitude - 差分の大きさ
    */
+  private getCurrentStateAsPattern(): T {
+    // This is a simplified representation. A real implementation would be more sophisticated.
+    // For now, we return the first pattern template if it exists.
+    if (this.patternTemplates.size > 0) {
+      const firstKey = this.patternTemplates.keys().next().value;
+      return this.patternTemplates.get(firstKey)!.pattern;
+    }
+    // Fallback to a default pattern if no templates exist.
+    return { toVector: () => [] } as unknown as T;
+  }
+
   private adaptPatternTemplates(learningRate: number, magnitude: number): void {
     // 全テンプレートに小さな摂動を加える
     for (const [patternId, template] of this.patternTemplates) {

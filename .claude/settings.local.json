@@ -8,7 +8,8 @@
       "Bash(npm test:*)",
       "Bash(touch:*)",
       "Bash(grep:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": []
   }
