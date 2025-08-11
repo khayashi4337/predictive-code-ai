@@ -14,8 +14,7 @@ export * from './pattern';
 // Learning関連のエクスポート（P2_LearnSignal）
 export * from './learning';
 
-// Index関連のエクスポート（P2_Index）
-export * from './index';
+
 
 // Metrics関連のエクスポート（P1_Metrics）
 export * from './metrics';

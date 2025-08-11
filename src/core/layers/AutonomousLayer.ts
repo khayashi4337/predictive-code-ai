@@ -1,10 +1,11 @@
+import { DebugOption } from '../../debug/DebugOption';
 import { Context } from '../tag/Context';
 import { ContextInfo } from '../tag/ContextInfo';
 import { InterLayerRelativeJudgementLink } from '../links/InterLayerRelativeJudgementLink';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { LearningSignal } from '../learning/LearningSignalV2';
-import { LayerManager } from './LayerManager';
+
 
 /**
  * 自律層インターフェース（クラス図準拠版）
@@ -49,7 +50,7 @@ export interface AutonomousLayer<T extends Context> {
    * 
    * @param signal - モデル更新のための学習信号
    */
-  updatePredictiveModel(signal: LearningSignal<T>): void;
+  updatePredictiveModel(signal: LearningSignal<T>): Promise<LearningSignal<T>[]>;
   
   /**
    * 層の識別子を取得
@@ -97,8 +98,7 @@ export interface AutonomousLayer<T extends Context> {
  */
 export abstract class BaseAutonomousLayer<T extends Context> implements AutonomousLayer<T> {
   
-  /** レイヤーマネージャー */
-  protected layerManager?: LayerManager<T>;
+
   
   /** 層の識別子 */
   protected readonly layerId: string;
@@ -130,6 +130,9 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
   
   /** 上位層へのリンク */
   protected readonly upstreamLinks: InterLayerRelativeJudgementLink<T>[] = [];
+
+  /** 下位層へのリンク */
+  protected readonly downstreamLinks: InterLayerRelativeJudgementLink<T>[] = [];
   
   /**
    * コンストラクタ
@@ -143,9 +146,8 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
     layerId: string, 
     layerName: string, 
     layerType: string,
-    layerManager?: LayerManager<T>
+
   ) {
-    this.layerManager = layerManager;
     if (!layerId || !layerName || !layerType) {
       throw new Error('Layer ID, name, and type are required');
     }
@@ -224,7 +226,23 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
    * @param link - 上位層へのリンク
    */
   public addUpstreamLink(link: InterLayerRelativeJudgementLink<T>): void {
+    if (DebugOption.IS_EMPTY_LINK) {
+      console.log(DebugOption.EMPTY_LINK_MESSAGE);
+      return;
+    }
     this.upstreamLinks.push(link);
+  }
+
+  /**
+   * 下位層へのリンクを追加します。
+   * @param link - 下位層へのリンク
+   */
+  public addDownstreamLink(link: InterLayerRelativeJudgementLink<T>): void {
+    if (DebugOption.IS_EMPTY_LINK) {
+      console.log(DebugOption.EMPTY_LINK_MESSAGE);
+      return;
+    }
+    this.downstreamLinks.push(link);
   }
   
   /**
@@ -295,9 +313,8 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
    * 予測モデル更新の具体的な実装（サブクラスでオーバーライド）
    * @param signal - 学習信号
    */
-  protected async doUpdatePredictiveModel(_learningSignal: LearningSignal<T>): Promise<LearningSignal<T>[]> {
-    return []; // デフォルトでは伝播する信号はない
-  }
+  public abstract doUpdatePredictiveModel(learningSignal: LearningSignal<T>): Promise<LearningSignal<T>[]>;
+
   
   /**
    * 統計情報を更新

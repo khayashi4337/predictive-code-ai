@@ -1,7 +1,8 @@
 import { SensoryAutonomousLayer, PatternAutonomousLayer, ConceptAutonomousLayer } from '../layers/LayerImplementations';
 import { LayerManager } from '../layers/LayerManager';
 import { InterLayerRelativeJudgementLink } from './InterLayerRelativeJudgementLink';
-import { ExperienceIntegrator, HippocampusAutonomousModule, CurrentExperience, RepresentativeExperienceSet } from '../hippocampus/HippocampusAutonomousModule';
+import { HippocampusAutonomousModule } from '../hippocampus/HippocampusAutonomousModule';
+import { ExperienceIntegrator, CurrentExperience, RepresentativeExperienceSet } from '../hippocampus/HippocampusSupportTypes';
 import { LRBurst, SensitivityEventBus, LearningRateModulator } from '../sensitivity/LRBurst';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';

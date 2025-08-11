@@ -33,6 +33,13 @@ export class Tag {
     return new Tag(TagType.NUMBER, key, undefined, undefined, value);
   }
 
+  /**
+   * 文字列型タグの簡易コンストラクタ
+   */
+  static create(key: string): Tag {
+    return new Tag(TagType.STRING, key, undefined, key, undefined);
+  }
+
   private constructor(
     type: TagType,
     key: string,
