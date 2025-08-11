@@ -102,8 +102,8 @@ export class InterLayerRelativeJudgementLink<T extends Context> {
     this._learningRatePolicy = learningRatePolicy;
     this._updateScopePolicy = updateScopePolicy;
     this._skipPolicy = skipPolicy;
-    this._linkId = linkId ?? this.generateLinkId();
     this._createdAt = new Date();
+    this._linkId = linkId ?? this.generateLinkId();
     this._metadata = new Map(metadata);
   }
   

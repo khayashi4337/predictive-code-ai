@@ -528,6 +528,35 @@ export class ConceptAutonomousLayer<T extends VectorizableContext> extends BaseA
   }
   
   /**
+   * 活性化する概念を予測
+   * @param context - 文脈情報
+   * @returns 予測された概念
+   */
+  private predictActiveConcept(_context: ContextInfo<T>): { pattern: T } {
+    // TODO: 現在は最も活性化が高い概念を単純に返すが、将来的には文脈を考慮した予測を行う
+    let bestConcept = { id: 'object', activation: -1 };
+    
+    for (const [conceptId, history] of this.conceptActivations) {
+      if (history.length > 0) {
+        const recentActivation = history.slice(-5).reduce((sum, val) => sum + val, 0) / Math.min(5, history.length);
+        if (recentActivation > bestConcept.activation) {
+          bestConcept = { id: conceptId, activation: recentActivation };
+        }
+      }
+    }
+    
+    const concept = this.conceptHierarchy.get(bestConcept.id);
+    // 概念が見つからない場合は、デフォルトのベクトルを返す
+    const conceptVector = concept ? concept.vector : new Array(10).fill(0.1);
+    
+    return {
+      pattern: {
+        toVector: () => conceptVector.slice()
+      } as T
+    };
+  }
+  
+  /**
    * 基本概念を初期化
    */
   private initializeBaseConcepts(): void {
@@ -592,36 +621,25 @@ export class ConceptAutonomousLayer<T extends VectorizableContext> extends BaseA
   }
   
   /**
-   * 活性概念を予測
-   * @param context - 文脈情報
-   * @returns 予測される概念
+   * 概念階層を適応的に調整
+   * @param learningRate - 学習率
+   * @param magnitude - 差分の大きさ
    */
-  private predictActiveConcept(_context: ContextInfo<T>): { id: string; pattern: T } {
-    // 最も活性化が高い概念を選択
-    let bestConcept = { id: 'object', activation: 0 };
-    
-    for (const [conceptId, history] of this.conceptActivations) {
-      if (history.length > 0) {
-        const recentActivation = history.slice(-3).reduce((sum, val) => sum + val, 0) / Math.min(3, history.length);
-        if (recentActivation > bestConcept.activation) {
-          bestConcept = { id: conceptId, activation: recentActivation };
-        }
-      }
+  private adaptConceptHierarchy(learningRate: number, magnitude: number): void {
+    // 概念ベクトルの微調整
+    for (const [_conceptId, concept] of this.conceptHierarchy) {
+      concept.vector = concept.vector.map(value => {
+        const adjustment = (Math.random() - 0.5) * learningRate * magnitude * 0.1;
+        return Math.max(0, Math.min(1, value + adjustment));
+      });
     }
-    
-    const concept = this.conceptHierarchy.get(bestConcept.id);
-    const conceptVector = concept ? concept.vector : [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
-    
-    return {
-      id: bestConcept.id,
-      pattern: {
-        toVector: () => conceptVector.slice()
-      } as T
-    };
   }
   
   /**
-   * ベクトル間の類似度を計算
+   * ベクトル間の類似度を計算（コサイン類似度）
+   * @param vec1 - ベクトル1
+   * @param vec2 - ベクトル2
+   * @returns 類似度
    */
   private calculateSimilarity(vec1: number[], vec2: number[]): number {
     const minLength = Math.min(vec1.length, vec2.length);
@@ -630,33 +648,19 @@ export class ConceptAutonomousLayer<T extends VectorizableContext> extends BaseA
     let norm2 = 0;
     
     for (let i = 0; i < minLength; i++) {
-      dotProduct += vec1[i] * vec2[i];
-      norm1 += vec1[i] * vec1[i];
-      norm2 += vec2[i] * vec2[i];
+      dotProduct += (vec1[i] || 0) * (vec2[i] || 0);
+      norm1 += (vec1[i] || 0) ** 2;
+      norm2 += (vec2[i] || 0) ** 2;
     }
     
     const magnitude1 = Math.sqrt(norm1);
     const magnitude2 = Math.sqrt(norm2);
     
-    return magnitude1 && magnitude2 ? dotProduct / (magnitude1 * magnitude2) : 0;
-  }
-  
-  /**
-   * 概念階層を適応的に調整
-   * @param learningRate - 学習率
-   * @param magnitude - 差分の大きさ
-   */
-  private adaptConceptHierarchy(learningRate: number, magnitude: number): void {
-    // 概念ベクトルの微調整
-    for (const [_conceptId, concept] of this.conceptHierarchy) {
-      const adaptedVector = concept.vector.map(value => {
-        const adjustment = (Math.random() - 0.5) * learningRate * magnitude * 0.05;
-        return Math.max(0, Math.min(1, value + adjustment));
-      });
-      
-      concept.vector = adaptedVector;
-      concept.confidence = Math.max(0.1, Math.min(1, concept.confidence + (Math.random() - 0.5) * learningRate * 0.1));
+    if (magnitude1 === 0 || magnitude2 === 0) {
+      return 0;
     }
+    
+    return dotProduct / (magnitude1 * magnitude2);
   }
 }
 

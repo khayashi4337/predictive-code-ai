@@ -78,8 +78,8 @@ export class LearningSignal<T extends Context> {
     this.adaptiveLearningRate = adaptiveLearningRate;
     this.referenceDifference = referenceDifference;
     this.updateTarget = updateTarget;
-    this._signalId = signalId ?? this.generateSignalId();
     this._createdAt = new Date();
+    this._signalId = signalId ?? this.generateSignalId();
     this._expirationMs = expirationMs;
     this._metadata = new Map(metadata);
   }
