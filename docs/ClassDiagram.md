@@ -432,105 +432,105 @@ package "実行基盤（イベント＋層ごとフレーム）" as P7 {
   }
 }
 
-' === ここからパッチ：P8 に MCP/Connectors を追加（疎結合） ===
+' === ここからパッチ：P8 に MCP/コネクタ を追加（疎結合） ===
 
 package "ユーザIF/運用" as P8 {
 
-  package "連携(MCP/Connectors)" as P8_MCP {
+  package "連携(MCP/コネクタ)" as P8_MCP {
 
-    interface Connector {
-      +id(): String
-      +kind(): String         ' "trading" | "notifier" | "marketdata" など
-      +tags(): Set<タグ>
+    interface コネクタ {
+      +ID取得(): String
+      +種別取得(): String         ' 例：「取引」「通知」「市場データ」など
+      +タグ一覧取得(): Set<タグ>
     }
 
-    interface TradingConnector extends Connector {
-      +placeOrder(req: OrderRequest): OrderResponse
-      +closeAll(symbol: String): OrderResponse
-      +positions(): String
-      +signal(msg: String): void
+    interface 取引コネクタ extends コネクタ {
+      +注文実行(リクエスト: 注文リクエスト): 注文レスポンス
+      +全決済(銘柄: String): 注文レスポンス
+      +建玉一覧取得(): String
+      +シグナル通知(メッセージ: String): void
     }
 
-    interface NotifierConnector extends Connector {
-      +notify(msg: String): void
+    interface 通知コネクタ extends コネクタ {
+      +通知(メッセージ: String): void
     }
 
-    interface MarketDataConnector extends Connector {
-      +subscribe(symbol: String): void
-      +unsubscribe(symbol: String): void
+    interface 市場データコネクタ extends コネクタ {
+      +購読(銘柄: String): void
+      +購読解除(銘柄: String): void
     }
 
-    class MCPClient {
-      +handshake(): List<CapabilityDescriptor>
-      +invoke(toolName: String, argsJson: String): String
-      +subscribe(eventName: String): void
+    class MCPクライアント {
+      +能力交換(): List<能力記述子>
+      +実行(ツール名: String, 引数JSON: String): String
+      +購読(イベント名: String): void
     }
 
-    class CapabilityDescriptor {
-      name: String            ' 例: "order.place"
-      version: String
-      inputSchema: String     ' JSON Schema (文字列で保持)
-      outputSchema: String
-      付帯タグ: Set<タグ>
+    class 能力記述子 {
+      名前: String            ' 例：「注文.実行」
+      バージョン: String
+      入力スキーマ: String     ' JSONスキーマ（文字列で保持）
+      出力スキーマ: String
+      関連タグ: Set<タグ>
     }
 
-    class ConnectorRegistry {
-      +register(c: Connector): void
-      +resolve(kind: String, tags: Set<タグ>): Connector
-      +byTag(tag: タグ): List<Connector>
+    class コネクタ登録簿 {
+      +登録(c: コネクタ): void
+      +解決(種別: String, タグ群: Set<タグ>): コネクタ
+      +タグで検索(tag: タグ): List<コネクタ>
     }
 
-    class MCPToolBinding {
-      domainOp: String        ' 例: "placeOrder"
-      toolName: String        ' 例: "order.place"
-      inputMapping: String    ' JSONPath/テンプレ
-      outputMapping: String
+    class MCPツール連携 {
+      ドメイン操作: String        ' 例：「注文実行」
+      ツール名: String        ' 例：「注文.実行」
+      入力マッピング: String    ' JSONPath/テンプレート
+      出力マッピング: String
     }
 
-    class ExecutionRouter {
-      +routeOrder(profile: StrategyProfile, req: OrderRequest): TradingConnector
-      +routeNotify(tags: Set<タグ>): NotifierConnector
-      +routeMarket(tags: Set<タグ>): MarketDataConnector
+    class 実行ルーター {
+      +注文ルーティング(プロファイル: 戦略プロファイル, リクエスト: 注文リクエスト): 取引コネクタ
+      +通知ルーティング(タグ群: Set<タグ>): 通知コネクタ
+      +市場データルーティング(タグ群: Set<タグ>): 市場データコネクタ
     }
 
-    class OrderRequest {
-      symbol: String
-      side: String            ' "buy" | "sell"
-      volume: double
-      price: double
-      sl: double
-      tp: double
-      timeInForce: String
-      tags: Set<タグ>
+    class 注文リクエスト {
+      銘柄: String
+      売買方向: String            ' 「買い」|「売り」
+      数量: double
+      価格: double
+      損切り: double
+      利食い: double
+      有効期間: String
+      タグ群: Set<タグ>
     }
 
-    class OrderResponse {
-      orderId: String
-      status: String          ' accepted/filled/rejected 等
-      filled: double
-      message: String
+    class 注文レスポンス {
+      注文ID: String
+      状態: String          ' 受付/約定/拒否など
+      約定済み数量: double
+      メッセージ: String
     }
 
-    class AuthCredential {
-      kind: String            ' "Bearer" | "APIKey" | ...
-      value: String
+    class 認証情報 {
+      種別: String            ' 「Bearer」「APIキー」など
+      値: String
     }
 
-    class CredentialVault {
-      +get(connectorId: String): AuthCredential
-      +put(connectorId: String, cred: AuthCredential): void
+    class 認証情報保管庫 {
+      +取得(コネクタID: String): 認証情報
+      +保存(コネクタID: String, cred: 認証情報): void
     }
 
-    ' --- 参考実装（外部にある前提のモック型；任意） ---
-    class MQLTradingConnector {
-      endpoint: String
+    ' --- 参考実装（外部に存在する前提のモック型。任意） ---
+    class MQL取引コネクタ {
+      エンドポイント: String
     }
-    TradingConnector <|.. MQLTradingConnector
+    取引コネクタ <|.. MQL取引コネクタ
 
-    class LineNotifyConnector {
-      tokenAlias: String
+    class LINE通知コネクタ {
+      トークンエイリアス: String
     }
-    NotifierConnector <|.. LineNotifyConnector
+    通知コネクタ <|.. LINE通知コネクタ
 
   }
 
@@ -539,7 +539,7 @@ package "ユーザIF/運用" as P8 {
 
 '========================================
 ' パッケージ間の高粒度の関係（クラス同士の細かい矢印は省略）
-P1_Links ..> P1_Metrics : 距離選択/Factory
+P1_Links ..> P1_Metrics : 距離選択/ファクトリ
 P1_Links ..> P2_PatternDelta : 期待/実際/差分
 P1_Links ..> P2_LearnSignal : 学習率/更新スコープ/学習信号
 P1_Layers ..> P1_Links : 上下を結ぶ相対判定
@@ -556,8 +556,8 @@ P7_Integrate ..> P1_Links : Δ統合/介入
 P7_Integrate ..> P2_LearnSignal : 履歴/メタ学習
 P8_MCP ..> P8_Commands : 運用コマンドからの実行委譲
 P8_MCP ..> P8_Alerts   : 通知経路（Line など）を疎結合で
-P8_MCP ..> P6_Action   : 取引I/Oを外部コネクタへブリッジ
-P8_MCP ..> P3_Input    : MarketData購読（任意）
+P8_MCP ..> P6_Action   : 取引I/Oを外部コネクタへ橋渡し
+P8_MCP ..> P3_Input    : 市場データ購読（任意）
 
 ' —— 縦並びのための隠し矢印 ——
 P1 -[hidden]down-> P2
