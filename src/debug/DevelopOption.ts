@@ -112,6 +112,46 @@ export class DevelopOption {
   public static readonly isExecute_SD_15_expectation_formation = true;
 
   /**
+   * SD-16: メタ学習ループ（ポリシー更新）
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_16_delta_history_collection = true;
+  public static readonly isExecute_SD_16_meta_learning_process = true;
+  public static readonly isExecute_SD_16_policy_adaptation = true;
+
+  /**
+   * SD-17: オフライン再生（リプレイ）
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_17_history_retrieval = true;
+  public static readonly isExecute_SD_17_pattern_replay = true;
+  public static readonly isExecute_SD_17_model_stabilization = true;
+
+  /**
+   * SD-18: 判定基準の再学習
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_18_judgment_history_analysis = true;
+  public static readonly isExecute_SD_18_criteria_relearning = true;
+  public static readonly isExecute_SD_18_criteria_update = true;
+
+  /**
+   * SD-19: 上位1：下位N のΔ統合
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_19_expectation_propagation = true;
+  public static readonly isExecute_SD_19_delta_aggregation = true;
+  public static readonly isExecute_SD_19_unified_update = true;
+
+  /**
+   * SD-20: クロスモダリティ結合（視覚×聴覚等）
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_20_cross_modal_expectation = true;
+  public static readonly isExecute_SD_20_modality_delta_integration = true;
+  public static readonly isExecute_SD_20_unified_feedback = true;
+
+  /**
    * generateExpectedPattern のモック実装を有効にするフラグ
    * true の場合、渡されたコンテキストをそのまま返すモック実装を使用します。
    */
