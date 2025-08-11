@@ -1,4 +1,4 @@
-import { VectorizableContext } from '../tag/VectorizableContext';
+// import { VectorizableContext } from '../tag/VectorizableContext'; // Unused import
 import { RelativeDifference } from '../pattern/RelativeDifference';
 
 /**
@@ -8,13 +8,13 @@ import { RelativeDifference } from '../pattern/RelativeDifference';
  * LRBurst発火、判定基準の分散化などを行う。
  */
 export class HippocampusAutonomousModule {
-  private representativeExperiences: Map<string, any> = new Map();
-  private judgementHistory: Array<any> = [];
+  // private _representativeExperiences: Map<string, any> = new Map(); // Unused in skeleton implementation
+  // private _judgementHistory: Array<any> = []; // Unused in skeleton implementation
   
   /**
    * 経験相対照合
    */
-  public compareRelativeExperience(current: CurrentExperience, representativeSet: RepresentativeExperienceSet): RelativeDifference<any> {
+  public compareRelativeExperience(current: CurrentExperience, _representativeSet: RepresentativeExperienceSet): RelativeDifference<any> {
     // TODO: 実装
     const magnitude = Math.random() * 0.5; // 仮実装
     return new RelativeDifference<any>(magnitude, current.contextInfo);
@@ -45,7 +45,7 @@ export class HippocampusAutonomousModule {
   /**
    * 判定基準の分散化
    */
-  public decentralizeJudgementBasis(basis: BasisPattern): void {
+  public decentralizeJudgementBasis(_basis: BasisPattern): void {
     // TODO: 基準パターンの分散化ロジック
     console.log('Decentralizing judgement basis');
   }
@@ -53,7 +53,7 @@ export class HippocampusAutonomousModule {
   /**
    * 判定基準再学習
    */
-  public relearnJudgementBasis(history: JudgementHistory): void {
+  public relearnJudgementBasis(_history: JudgementHistory): void {
     // TODO: 履歴に基づく基準の再学習
     console.log('Relearning judgement basis');
   }
@@ -61,7 +61,7 @@ export class HippocampusAutonomousModule {
   /**
    * バースト暴走予防
    */
-  public preventBurstRunaway(basis: BasisPattern): void {
+  public preventBurstRunaway(_basis: BasisPattern): void {
     // TODO: バースト制御ロジック
     console.log('Preventing burst runaway');
   }
@@ -84,7 +84,7 @@ export class BasisPattern {
     public weighting: Map<string, number> = new Map()
   ) {}
   
-  public apply(current: CurrentExperience): any {
+  public apply(_current: CurrentExperience): any {
     return null; // TODO: 実装
   }
 }
@@ -100,7 +100,7 @@ export class JudgementHistory {
 }
 
 export class ExperienceIntegrator {
-  public integrate(sensory: any, pattern: any, concept: any, action: any): CurrentExperience {
+  public integrate(_sensory: any, _pattern: any, _concept: any, _action: any): CurrentExperience {
     // TODO: 経験統合ロジック
     return new CurrentExperience({});
   }

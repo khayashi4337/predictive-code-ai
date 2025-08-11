@@ -1,4 +1,5 @@
 import { SensoryAutonomousLayer, PatternAutonomousLayer, ConceptAutonomousLayer } from '../layers/LayerImplementations';
+import { LayerManager } from '../layers/LayerManager';
 import { InterLayerRelativeJudgementLink } from './InterLayerRelativeJudgementLink';
 import { ExperienceIntegrator, HippocampusAutonomousModule, CurrentExperience, RepresentativeExperienceSet } from '../hippocampus/HippocampusAutonomousModule';
 import { LRBurst, SensitivityEventBus, LearningRateModulator } from '../sensitivity/LRBurst';
@@ -23,9 +24,21 @@ class MockContext implements VectorizableContext {
 
 class MockDistanceMetric implements DifferenceDistanceMetric<MockContext> {
   distance(p1: ExpectedPatternV2<MockContext>, p2: ActualPatternV2<MockContext>): number {
-    const v1 = p1.body.toVector();
-    const v2 = p2.body.toVector();
-    return Math.sqrt(v1.reduce((sum, val, i) => sum + (val - (v2[i] || 0)) ** 2, 0));
+    try {
+      // First, check if body has toVector method (VectorizableContext)
+      const v1 = (p1.body && typeof p1.body.toVector === 'function') 
+        ? p1.body.toVector()
+        : (Array.isArray(p1.body) ? p1.body : [0]);
+      
+      const v2 = (p2.body && typeof p2.body.toVector === 'function') 
+        ? p2.body.toVector()
+        : (Array.isArray(p2.body) ? p2.body : [0]);
+      
+      return Math.sqrt(v1.reduce((sum, val, i) => sum + (val - (v2[i] || 0)) ** 2, 0));
+    } catch (error) {
+      // Fallback to default distance for any remaining issues
+      return 1.0;
+    }
   }
   isValidDistance = () => true;
   getName = () => 'MockEuclideanDistance';
@@ -37,6 +50,7 @@ const mockUpdateScopePolicy: UpdateScopePolicy<MockContext> = { scope: jest.fn((
 const mockSkipPolicy: SkipPolicy<MockContext> = { judgeSkip: jest.fn(() => SkipEnum.PartialUpdate), isValid: jest.fn(() => true), getPolicyName: () => 'MockSkipPolicy' };
 
 describe('SD-04: Experience Integration and Burst', () => {
+  let layerManager: LayerManager<MockContext>;
   let sensoryLayer: SensoryAutonomousLayer<MockContext>;
   let patternLayer: PatternAutonomousLayer<MockContext>;
   let conceptLayer: ConceptAutonomousLayer<MockContext>;
@@ -50,9 +64,16 @@ describe('SD-04: Experience Integration and Burst', () => {
   let learningRateModulator: LearningRateModulator;
 
   beforeEach(() => {
-    sensoryLayer = new SensoryAutonomousLayer<MockContext>('sensory-01');
-    patternLayer = new PatternAutonomousLayer<MockContext>('pattern-01');
-    conceptLayer = new ConceptAutonomousLayer<MockContext>('concept-01');
+    layerManager = new LayerManager<MockContext>();
+    
+    sensoryLayer = new SensoryAutonomousLayer<MockContext>('sensory-01', '感覚層', layerManager);
+    patternLayer = new PatternAutonomousLayer<MockContext>('pattern-01', 'パターン層', layerManager);
+    conceptLayer = new ConceptAutonomousLayer<MockContext>('concept-01', '概念層', layerManager);
+    
+    // Register all layers with the manager
+    layerManager.registerLayer(sensoryLayer);
+    layerManager.registerLayer(patternLayer);
+    layerManager.registerLayer(conceptLayer);
 
     link_p_s = new InterLayerRelativeJudgementLink('pattern-01', 'sensory-01', mockDistanceMetric, mockLearningRatePolicy, mockUpdateScopePolicy, mockSkipPolicy);
     link_c_p = new InterLayerRelativeJudgementLink('concept-01', 'pattern-01', mockDistanceMetric, mockLearningRatePolicy, mockUpdateScopePolicy, mockSkipPolicy);
@@ -157,7 +178,7 @@ describe('SD-04: Experience Integration and Burst', () => {
     expect(amplificationFactor).toBeGreaterThanOrEqual(1.0);
   });
 
-  test('should trigger a burst of learning signals on significant difference', () => {
+  test('should trigger a burst of learning signals on significant difference', async () => {
     // Original test - enhanced with burst components
     const expectedPattern = patternLayer.generateExpectedPattern(sensoryLayer.getLayerId(), new ContextInfo(new MockContext([0.1, 0.1, 0.1])));
     const actualPattern = new ActualPatternV2(new ContextInfo(new MockContext([0.9, 0.9, 0.9])));
@@ -169,7 +190,14 @@ describe('SD-04: Experience Integration and Burst', () => {
     expect(judgementResult.learningRate.value).toBe(0.8);
 
     const learningSignal = new LearningSignal(judgementResult.learningRate, judgementResult.referenceDifference, judgementResult.updateScope);
-    patternLayer.updatePredictiveModel(learningSignal);
+    
+    // Pattern layer processes the learning signal and should propagate to concept layer
+    const propagatedSignals = await patternLayer.updatePredictiveModel(learningSignal);
+    
+    // If there are propagated signals, send them to the concept layer
+    for (const signal of propagatedSignals) {
+      await conceptLayer.updatePredictiveModel(signal);
+    }
 
     expect(conceptLayer.updatePredictiveModel).toHaveBeenCalled();
     

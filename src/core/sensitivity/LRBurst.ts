@@ -65,7 +65,7 @@ export class SensitivityEventBus {
 export class SensitivityState {
   public coefficientByTag: Map<string, number> = new Map();
   
-  public updateTime(now: Date): void {
+  public updateTime(_now: Date): void {
     // TODO: 時間経過による感度の減衰処理
   }
   

@@ -4,6 +4,7 @@ import { InterLayerRelativeJudgementLink } from '../links/InterLayerRelativeJudg
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { LearningSignal } from '../learning/LearningSignalV2';
+import { LayerManager } from './LayerManager';
 
 /**
  * 自律層インターフェース（クラス図準拠版）
@@ -96,6 +97,9 @@ export interface AutonomousLayer<T extends Context> {
  */
 export abstract class BaseAutonomousLayer<T extends Context> implements AutonomousLayer<T> {
   
+  /** レイヤーマネージャー */
+  protected layerManager?: LayerManager<T>;
+  
   /** 層の識別子 */
   protected readonly layerId: string;
   
@@ -133,8 +137,15 @@ export abstract class BaseAutonomousLayer<T extends Context> implements Autonomo
    * @param layerId - 層の識別子
    * @param layerName - 層の名前
    * @param layerType - 層の種別
+   * @param layerManager - レイヤーマネージャー
    */
-  protected constructor(layerId: string, layerName: string, layerType: string) {
+  protected constructor(
+    layerId: string, 
+    layerName: string, 
+    layerType: string,
+    layerManager?: LayerManager<T>
+  ) {
+    this.layerManager = layerManager;
     if (!layerId || !layerName || !layerType) {
       throw new Error('Layer ID, name, and type are required');
     }

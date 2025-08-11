@@ -5,7 +5,7 @@ import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { RelativeDifference } from '../pattern/RelativeDifference';
 import { AdaptiveLearningRate } from '../learning/AdaptiveLearningRate';
 import { UpdateScope } from '../learning/UpdateScope';
-import { LearningSignal } from '../learning/LearningSignalV2';
+// import { LearningSignal } from '../learning/LearningSignalV2'; // Unused import
 import { DifferenceDistanceMetric } from '../metrics/interfaces';
 import { LearningRatePolicy, UpdateScopePolicy, SkipPolicy } from './PolicyInterfaces';
 import { SkipEnum } from './SkipEnum';
