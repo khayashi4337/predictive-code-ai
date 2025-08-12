@@ -59,13 +59,13 @@ export class ThalamusGate {
     this.gatePolicy = gatePolicy;
   }
   
-  public adjustThreshold(newThreshold: number, tags: Set<Tag>): void {
+  public adjustThreshold(newThreshold: number, tags: ReadonlySet<Tag>): void {
     for (const tag of tags) {
       this.currentThresholds.set(tag.key, newThreshold);
     }
   }
   
-  public adjustGain(newGain: number, tags: Set<Tag>): void {
+  public adjustGain(newGain: number, tags: ReadonlySet<Tag>): void {
     for (const tag of tags) {
       this.currentGains.set(tag.key, newGain);
     }
@@ -92,7 +92,7 @@ export class ThalamusGate {
       pattern.contextInfo.tags,
       new Map([
         ...pattern.contextInfo.statistics,
-        ['thalamus_filter_applied', true],
+        ['thalamus_filter_applied', 1],
         ['threshold_used', threshold],
         ['gain_used', gain]
       ])
@@ -106,8 +106,8 @@ export class ThalamusGate {
  * ゲートポリシー（クラス図P3_Gate.GatePolicyに対応）
  */
 export interface GatePolicy {
-  threshold(tags: Set<Tag>): number;
-  gain(tags: Set<Tag>): number;
+  threshold(tags: ReadonlySet<Tag>): number;
+  gain(tags: ReadonlySet<Tag>): number;
 }
 
 /**
@@ -117,11 +117,11 @@ export class DefaultGatePolicy implements GatePolicy {
   private defaultThreshold: number = 0.1;
   private defaultGain: number = 1.0;
   
-  threshold(_tags: Set<Tag>): number {
+  threshold(_tags: ReadonlySet<Tag>): number {
     return this.defaultThreshold;
   }
   
-  gain(_tags: Set<Tag>): number {
+  gain(_tags: ReadonlySet<Tag>): number {
     return this.defaultGain;
   }
 }

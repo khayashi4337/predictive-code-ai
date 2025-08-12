@@ -217,7 +217,7 @@ export class InterLayerRelativeJudgementLink<T extends Context> {
     if (skipJudgement === SkipEnum.FullSkip) {
       const judgementResult = {
         referenceDifference,
-        learningRate: AdaptiveLearningRate.createInitial(0, new Map([['skipped', true]])),
+        learningRate: AdaptiveLearningRate.createInitial(0.001, new Map([['skipped', true]])),
         updateScope: new UpdateScope(),
         skipJudgement,
         shouldProcess: false

@@ -11,6 +11,7 @@ import { AdaptiveLearningRate, LearningRateOrigin } from '../learning/AdaptiveLe
 import { UpdateScope } from '../learning/UpdateScope';
 import { SkipEnum } from './SkipEnum';
 import { Tag } from '../tag/Tag';
+import { DevelopOption } from '../../debug/DevelopOption';
 
 // モック用のコンテキスト定義
 class MockContext implements VectorizableContext {
@@ -34,7 +35,7 @@ class MockDistanceMetric implements DifferenceDistanceMetric<MockContext> {
   getName(): string { return 'MockEuclideanDistance'; }
 }
 
-describe('SD-10: Action Plan Evaluation (Action↔Concept)', () => {
+describe('SD-10: 行動計画の相対判定（行動↔概念）', () => {
   let conceptLayer: ConceptAutonomousLayer<MockContext>;
   let actionLayer: ActionAutonomousLayer<MockContext>;
   let link: InterLayerRelativeJudgementLink<MockContext>;

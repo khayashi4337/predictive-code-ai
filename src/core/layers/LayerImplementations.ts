@@ -4,6 +4,7 @@ import { ContextInfo } from '../tag/ContextInfo';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { LearningSignal } from '../learning/LearningSignalV2';
+import { DevelopOption } from '../../debug/DevelopOption';
 import { BaseAutonomousLayer } from './AutonomousLayer';
 
 
@@ -44,10 +45,17 @@ export class PatternAutonomousLayer<T extends VectorizableContext> extends BaseA
     super(layerId, layerName, "pattern");
   }
   
-  public generateExpectedPattern(_destinationID: string, _context: ContextInfo<T>): ExpectedPatternV2<T> {
-    const defaultPattern = { toVector: () => new Array(10).fill(0.5) } as T;
-    const contextInfo = new ContextInfo<T>(defaultPattern, new Set(), new Map());
-    return new ExpectedPatternV2<T>(contextInfo);
+  public generateExpectedPattern(_destinationID: string, context: ContextInfo<T>): ExpectedPatternV2<T> {
+    if (DevelopOption.isGenerateExpectedPatternMock) {
+      // モック実装: 渡されたコンテキストをそのまま利用して期待パターンを生成
+      return new ExpectedPatternV2<T>(context);
+    } else {
+      // 本来のロジック（現在はスタブ）
+      console.warn('PatternAutonomousLayer.generateExpectedPattern is using a stub implementation.');
+      const defaultPattern = { toVector: () => new Array(10).fill(0.5) } as T;
+      const contextInfo = new ContextInfo<T>(defaultPattern, new Set(), new Map());
+      return new ExpectedPatternV2<T>(contextInfo);
+    }
   }
   
   protected doObserveActualPattern(_actual: ActualPatternV2<T>): void {
@@ -90,10 +98,17 @@ export class ConceptAutonomousLayer<T extends Context> extends BaseAutonomousLay
     super(layerId, layerName, "concept");
   }
   
-  public generateExpectedPattern(_destinationID: string, _context: ContextInfo<T>): ExpectedPatternV2<T> {
-    const defaultPattern = { conceptId: 'default' } as unknown as T;
-    const contextInfo = new ContextInfo<T>(defaultPattern, new Set(), new Map());
-    return new ExpectedPatternV2<T>(contextInfo);
+  public generateExpectedPattern(_destinationID: string, context: ContextInfo<T>): ExpectedPatternV2<T> {
+    if (DevelopOption.isGenerateExpectedPatternMock) {
+      // モック実装: 渡されたコンテキストをそのまま利用して期待パターンを生成
+      return new ExpectedPatternV2<T>(context);
+    } else {
+      // 本来のロジック（現在はスタブ）
+      console.warn('generateExpectedPattern is using a stub implementation.');
+      const defaultPattern = { conceptId: 'default' } as unknown as T;
+      const contextInfo = new ContextInfo<T>(defaultPattern, new Set(), new Map());
+      return new ExpectedPatternV2<T>(contextInfo);
+    }
   }
   
   protected doObserveActualPattern(_actual: ActualPatternV2<T>): void {

@@ -23,7 +23,7 @@ export class ContextInfo<T extends Context> {
    */
   constructor(
     body: T,
-    tags: Set<Tag> = new Set(),
+    tags: ReadonlySet<Tag> = new Set(),
     statistics: Map<string, number> = new Map()
   ) {
     this._body = body;

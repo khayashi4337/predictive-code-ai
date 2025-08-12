@@ -10,9 +10,10 @@ export class DevelopOption {
   public static isExecute_SD_01 = true;
 
   /**
-   * SD-02: (将来のテストケース用のプレースホルダ)
+   * SD-02: パターン→感覚の低位往復
+   * 低位での距離メトリクス選好処理
    */
-  public static isExecute_SD_02 = false;
+  public static isExecute_SD_02 = true;
 
   // --- 今後、テストケースを追加するたびに、ここにフラグを追加します --- //
   public static isExecute_SD_03 = true;
