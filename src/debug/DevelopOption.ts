@@ -192,6 +192,22 @@ export class DevelopOption {
   public static readonly isExecute_SD_25_rhythm_update = true;
 
   /**
+   * SD-26: 外部モニタへの状態フック
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_26_state_hook = true;
+  public static readonly isExecute_SD_26_adapter_conversion = true;
+  public static readonly isExecute_SD_26_monitor_integration = true;
+
+  /**
+   * SD-27: パラメータ調整UI
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_27_ui_parameter_change = true;
+  public static readonly isExecute_SD_27_service_management = true;
+  public static readonly isExecute_SD_27_policy_update = true;
+
+  /**
    * generateExpectedPattern のモック実装を有効にするフラグ
    * true の場合、渡されたコンテキストをそのまま返すモック実装を使用します。
    */
