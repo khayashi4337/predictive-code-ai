@@ -152,6 +152,46 @@ export class DevelopOption {
   public static readonly isExecute_SD_20_unified_feedback = true;
 
   /**
+   * SD-21: 上位N：下位M の混在統合
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_21_multi_expectation_aggregation = true;
+  public static readonly isExecute_SD_21_integrated_delta_distribution = true;
+  public static readonly isExecute_SD_21_cross_layer_synchronization = true;
+
+  /**
+   * SD-22: 同一層内の競合・勝者選択
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_22_candidate_generation = true;
+  public static readonly isExecute_SD_22_winner_selection = true;
+  public static readonly isExecute_SD_22_pattern_propagation = true;
+
+  /**
+   * SD-23: 大差分の即時処理 vs 通常フレーム処理
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_23_immediate_processing = true;
+  public static readonly isExecute_SD_23_frame_based_processing = true;
+  public static readonly isExecute_SD_23_priority_scheduling = true;
+
+  /**
+   * SD-24: フェーズ同期（層ごとの位相合わせ）
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_24_rhythm_configuration = true;
+  public static readonly isExecute_SD_24_layer_synchronization = true;
+  public static readonly isExecute_SD_24_phase_coordination = true;
+
+  /**
+   * SD-25: 周期オートチューニング
+   * シーケンス図の流れに対応するテストケース用フラグ
+   */
+  public static readonly isExecute_SD_25_load_detection = true;
+  public static readonly isExecute_SD_25_cycle_optimization = true;
+  public static readonly isExecute_SD_25_rhythm_update = true;
+
+  /**
    * generateExpectedPattern のモック実装を有効にするフラグ
    * true の場合、渡されたコンテキストをそのまま返すモック実装を使用します。
    */
