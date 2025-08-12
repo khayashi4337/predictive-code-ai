@@ -4,6 +4,7 @@ import { InterLayerRelativeJudgementLink } from '../links/InterLayerRelativeJudg
 import { ContextInfo } from '../tag/ContextInfo';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { L2Distance } from '../metrics/L2Distance';
+import { CosineDistance } from '../metrics/CosineDistance';
 import { VectorizableContext } from '../tag/VectorizableContext';
 import { Tag } from '../tag/Tag';
 import { LearningRatePolicy, UpdateScopePolicy, SkipPolicy } from '../links/PolicyInterfaces';
@@ -50,23 +51,53 @@ class MockSkipPolicy implements SkipPolicy<MockVectorizableContext> {
 }
 
 
-if (DevelopOption.isExecute_SD_01) {
-  describe('SD-01: 概念→パターンの基本往復', () => {
+describe('SD-01: 概念→パターンの基本往復', () => {
     test('シーケンス図に沿った処理が実行されること', async () => {
       try {
 
-    // 1. 登場クラスのインスタンス化
-    const conceptLayer = new ConceptAutonomousLayer<MockVectorizableContext>('concept1', '概念層');
-    const patternLayer = new PatternAutonomousLayer<MockVectorizableContext>('pattern1', 'パターン層');
+    // 1. 登場クラスのインスタンス化（フラグに応じてモック/本番を切り替え）
+    const conceptLayer = DevelopOption.isUseRealImplementation_SD_01_layers
+      ? new ConceptAutonomousLayer<MockVectorizableContext>('concept1', '概念層')
+      : new ConceptAutonomousLayer<MockVectorizableContext>('concept1', '概念層'); // TODO: モック実装があれば切り替え
+      
+    const patternLayer = DevelopOption.isUseRealImplementation_SD_01_layers
+      ? new PatternAutonomousLayer<MockVectorizableContext>('pattern1', 'パターン層')
+      : new PatternAutonomousLayer<MockVectorizableContext>('pattern1', 'パターン層'); // TODO: モック実装があれば切り替え
     
-    const link = new InterLayerRelativeJudgementLink<MockVectorizableContext>(
-      'concept1',
-      'pattern1',
-      new L2Distance(),
-      new MockLearningRatePolicy(),
-      new MockUpdateScopePolicy(),
-      new MockSkipPolicy()
-    );
+    // メトリクスの切り替え
+    const metric = DevelopOption.isUseRealImplementation_SD_01_metrics
+      ? new L2Distance()
+      : new L2Distance(); // TODO: モックメトリクスがあれば切り替え
+    
+    // ポリシーの切り替え
+    const learningRatePolicy = DevelopOption.isUseRealImplementation_SD_01_policies
+      ? new MockLearningRatePolicy() // TODO: 本番実装があれば切り替え
+      : new MockLearningRatePolicy();
+    const updateScopePolicy = DevelopOption.isUseRealImplementation_SD_01_policies
+      ? new MockUpdateScopePolicy() // TODO: 本番実装があれば切り替え
+      : new MockUpdateScopePolicy();
+    const skipPolicy = DevelopOption.isUseRealImplementation_SD_01_policies
+      ? new MockSkipPolicy() // TODO: 本番実装があれば切り替え
+      : new MockSkipPolicy();
+    
+    // リンクの作成
+    const link = DevelopOption.isUseRealImplementation_SD_01_link
+      ? new InterLayerRelativeJudgementLink<MockVectorizableContext>(
+          'concept1',
+          'pattern1',
+          metric,
+          learningRatePolicy,
+          updateScopePolicy,
+          skipPolicy
+        )
+      : new InterLayerRelativeJudgementLink<MockVectorizableContext>( // TODO: モックリンクがあれば切り替え
+          'concept1',
+          'pattern1',
+          metric,
+          learningRatePolicy,
+          updateScopePolicy,
+          skipPolicy
+        );
 
     // 2. 期待パターン生成
     const contextForExpected = new ContextInfo(new MockVectorizableContext([0.1, 0.2, 0.3]), new Set([Tag.create('test')]), new Map());
@@ -100,8 +131,3 @@ if (DevelopOption.isExecute_SD_01) {
       }
     });
   });
-} else {
-  describe.skip('SD-01: 概念→パターンの基本往復', () => {
-    test('isExecute_SD_01 is false, skipping tests', () => {});
-  });
-}

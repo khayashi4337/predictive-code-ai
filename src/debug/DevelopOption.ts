@@ -1,13 +1,36 @@
 /**
  * 開発用のオプションを管理するクラス。
- * 各テストケースの実行を個別に制御するための静的フラグを提供します。
+ * 各テストケースの実行とモック使用を個別に制御するための静的フラグを提供します。
+ * 
+ * 【統一ルール】
+ * - true  = 本番実装を使用（プロダクション）
+ * - false = モック/開発用実装を使用（デベロップメント）
+ * 
+ * 本番デプロイ時は全フラグをtrueにすることで、実装版での動作が保証されます。
  */
 export class DevelopOption {
+  // ==========================================
+  // SD-01: 概念→パターンの基本往復
+  // ==========================================
+  
   /**
    * SD-01: 概念→パターンの基本往復
-   * このフラグを true にすると、対応するテストが実行されます。
+   * 実装寄り制御フラグ群（true = 本番実装使用）
    */
-  public static isExecute_SD_01 = true;
+  
+  /** 層クラス（ConceptAutonomousLayer, PatternAutonomousLayer）の本番実装使用制御 */
+  public static readonly isUseRealImplementation_SD_01_layers = false;
+  
+  /** リンククラス（InterLayerRelativeJudgementLink）の本番実装使用制御 */
+  public static readonly isUseRealImplementation_SD_01_link = false;
+  
+  /** ポリシークラス（LearningRatePolicy, UpdateScopePolicy, SkipPolicy）の本番実装使用制御 */
+  public static readonly isUseRealImplementation_SD_01_policies = false;
+  
+  /** メトリクスクラス（L2Distance等）の本番実装使用制御 */
+  public static readonly isUseRealImplementation_SD_01_metrics = true;
+  
+  
 
   /**
    * SD-02: パターン→感覚の低位往復

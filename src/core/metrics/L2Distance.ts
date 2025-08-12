@@ -2,6 +2,7 @@ import { DifferenceDistanceMetric } from './interfaces';
 import { VectorizableContext } from '../tag/VectorizableContext';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
+import { DevelopOption } from '../../debug/DevelopOption';
 
 /**
  * L2距離（ユークリッド距離）メトリクス実装（クラス図準拠版）
