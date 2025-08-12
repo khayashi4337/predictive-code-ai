@@ -113,7 +113,7 @@ export class ExecutionResultCapture<T extends VectorizableContext> {
       new Set([Tag.createString('capture', 'execution_result')]),
       new Map([
         ['capture_timestamp', Date.now()],
-        ['capture_id', this.captureId]
+        ['capture_id_hash', this.captureId.length]
       ])
     );
     

@@ -3,6 +3,7 @@ import { InterLayerRelativeJudgementLink } from './InterLayerRelativeJudgementLi
 import { ActionExecutor, ExecutionResultCapture, ExecutionResultPattern, ExternalWorld } from '../action/ActionSystem';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
+import { RelativeDifference } from '../pattern/RelativeDifference';
 import { ContextInfo } from '../tag/ContextInfo';
 import { VectorizableContext } from '../tag/VectorizableContext';
 import { LearningRatePolicy, UpdateScopePolicy, SkipPolicy } from './PolicyInterfaces';
@@ -62,19 +63,21 @@ describe('SD-10: 行動計画の相対判定（行動↔概念）', () => {
     mockDistanceMetric = new MockDistanceMetric();
     
     mockLearningRatePolicy = {
-      learningRate: jest.fn(() => new AdaptiveLearningRate(0.15, LearningRateOrigin.ADAPTIVE)),
+      learningRate: jest.fn((difference: RelativeDifference<MockContext>, context: ContextInfo<MockContext>) => 
+        new AdaptiveLearningRate(0.15, LearningRateOrigin.ADAPTIVE)),
       isValid: jest.fn(() => true),
       getPolicyName: jest.fn(() => 'MockActionLearningRatePolicy')
     };
 
     mockUpdateScopePolicy = {
-      scope: jest.fn(() => new UpdateScope(new Set(['action_strategy', 'execution_params']))),
+      scope: jest.fn((difference: RelativeDifference<MockContext>, context: ContextInfo<MockContext>) => 
+        new UpdateScope(new Set(['action_strategy', 'execution_params']))),
       isValid: jest.fn(() => true),
       getPolicyName: jest.fn(() => 'MockActionUpdateScopePolicy')
     };
 
     mockSkipPolicy = {
-      judgeSkip: jest.fn(() => SkipEnum.FocusedCalculation),
+      judgeSkip: jest.fn((difference: RelativeDifference<MockContext>) => SkipEnum.FocusedCalculation),
       isValid: jest.fn(() => true),
       getPolicyName: jest.fn(() => 'MockActionSkipPolicy')
     };
@@ -217,7 +220,7 @@ describe('SD-10: 行動計画の相対判定（行動↔概念）', () => {
     // コンテキスト情報が保持されていることを確認
     expect(result.contextInfo).toBeDefined();
     expect(result.contextInfo.statistics.has('capture_timestamp')).toBe(true);
-    expect(result.contextInfo.statistics.has('capture_id')).toBe(true);
+    expect(result.contextInfo.statistics.has('capture_id_hash')).toBe(true);
 
     // 実行IDが設定されていることを確認
     expect(result.executionId).toBeDefined();
