@@ -25,11 +25,24 @@ export class DevelopOption {
   public static readonly isUseRealImplementation_SD_01_link = false;
   
   /** ポリシークラス（LearningRatePolicy, UpdateScopePolicy, SkipPolicy）の本番実装使用制御 */
-  public static readonly isUseRealImplementation_SD_01_policies = false;
+  public static readonly isUseRealImplementation_SD_01_policies = true;
   
   /** メトリクスクラス（L2Distance等）の本番実装使用制御 */
   public static readonly isUseRealImplementation_SD_01_metrics = true;
   
+  /**
+   * SD-01: ストラテジーパターン制御フラグ群
+   * Policy計算にシンプルストラテジーを使用するか制御
+   */
+  
+  /** 学習率ポリシーでシンプルストラテジー使用制御（true = シンプル計算, false = コンテキスト利用計算） */
+  public static readonly isUseSimpleStrategy_SD_01_learningRate = true;
+  
+  /** 更新スコープポリシーでシンプルストラテジー使用制御（true = シンプル計算, false = コンテキスト利用計算） */
+  public static readonly isUseSimpleStrategy_SD_01_updateScope = true;
+  
+  /** スキップポリシーでシンプルストラテジー使用制御（true = シンプル計算, false = コンテキスト利用計算） */
+  public static readonly isUseSimpleStrategy_SD_01_skip = true;
   
 
   /**
@@ -233,7 +246,14 @@ export class DevelopOption {
 
   /**
    * generateExpectedPattern のモック実装を有効にするフラグ
-   * true の場合、渡されたコンテキストをそのまま返すモック実装を使用します。
+   * false = 本番実装を使用（Phase 2完了により本番実装に移行）
    */
-  public static isGenerateExpectedPatternMock = true;
+  public static isGenerateExpectedPatternMock = false;
+
+  /**
+   * 概念層の本格予測アルゴリズム制御フラグ（Phase 2: Layer実装強化）
+   * true = 本格実装の予測アルゴリズムを使用
+   * false = 仮実装アルゴリズム（simpleHash等）を使用
+   */
+  public static isUseProductionConceptLayerAlgorithms = false;
 }

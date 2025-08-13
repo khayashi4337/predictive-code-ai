@@ -15,7 +15,10 @@ export enum LearningRateOrigin {
   EXPERIMENTAL = 'experimental',
   
   /** 最適化アルゴリズムによる値 */
-  OPTIMIZED = 'optimized'
+  OPTIMIZED = 'optimized',
+  
+  /** ストラテジーパターンによる値 */
+  STRATEGY = 'strategy'
 }
 
 /**

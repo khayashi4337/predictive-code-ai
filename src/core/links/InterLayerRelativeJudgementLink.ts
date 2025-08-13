@@ -1,5 +1,6 @@
 import { Context } from '../tag/Context';
 import { ContextInfo } from '../tag/ContextInfo';
+import { Statistics } from '../tag/Statistics';
 import { ExpectedPatternV2 } from '../pattern/ExpectedPatternV2';
 import { ActualPatternV2 } from '../pattern/ActualPatternV2';
 import { RelativeDifference } from '../pattern/RelativeDifference';
@@ -423,11 +424,9 @@ export class InterLayerRelativeJudgementLink<T extends Context> {
     ]);
     
     // 統計情報を統合
-    const combinedStats = new Map([
-      ...expected.contextInfo.statistics,
-      ...actual.contextInfo.statistics,
-      ['pattern_comparison_timestamp', Date.now()]
-    ]);
+    const combinedStats = expected.contextInfo.statistics.clone();
+    combinedStats.merge(actual.contextInfo.statistics);
+    combinedStats.setDate('pattern_comparison_timestamp', new Date());
     
     return new ContextInfo<T>(
       expected.body, // 期待パターンの本体を使用

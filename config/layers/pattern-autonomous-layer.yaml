@@ -1,0 +1,149 @@
+# パターン層自律モジュール設定ファイル
+# PatternAutonomousLayer の動作パラメータを定義
+
+# メタ情報
+meta:
+  version: "1.0.0"
+  description: "パターン層における自律的なパターン認識と変換の設定パラメータ"
+  last_updated: "2025-01-12"
+  author: "Predictive Code AI Team"
+
+# パターン認識設定
+pattern_recognition:
+  # 類似度計算設定
+  similarity_calculation:
+    # 正規化手法: "magnitude", "minmax", "zscore"
+    normalization_method: "magnitude"
+    
+    # 大きさスケーリング係数
+    magnitude_scaling: 1.0
+    
+    # 次元数による調整を行うか
+    dimension_adjustment: true
+  
+  # パターン分類設定
+  classification:
+    # uniform判定のための分散閾値
+    # この値未満の分散で uniform と判定
+    variance_threshold_uniform: 0.1
+    
+    # random判定のためのエントロピー閾値
+    # この値を超えるエントロピーで random と判定
+    entropy_threshold_random: 0.8
+    
+    # sequential判定のための相関閾値
+    # 隣接要素の相関がこの値を超えると sequential と判定
+    sequential_correlation_threshold: 0.7
+    
+    # spatial判定のための勾配分散閾値
+    # 勾配の分散がこの値未満で spatial と判定
+    spatial_gradient_variance_threshold: 0.05
+    
+    # frequency判定のための相関閾値
+    # 周期的相関がこの値を超えると frequency と判定
+    frequency_correlation_threshold: 0.5
+  
+  # 強度計算設定
+  intensity:
+    # 平均絶対値によるスケーリングを使用するか
+    mean_abs_scaling: true
+    
+    # 強度の境界値 [最小値, 最大値]
+    intensity_bounds: [0, 1]
+  
+  # 信頼度計算設定
+  confidence:
+    # 類似度の重み
+    similarity_weight: 0.6
+    
+    # 強度の重み
+    intensity_weight: 0.4
+    
+    # 保守的な信頼度調整係数（安全側に振る）
+    conservative_factor: 0.9
+
+# パターン変換設定
+pattern_transformation:
+  # シーケンシャル変換設定
+  sequential:
+    # 目的地IDからのシフト計算用の剰余値
+    shift_modulo: 10
+    
+    # サイン波周波数係数
+    sine_frequency_factor: 0.1
+    
+    # サイン波振幅
+    sine_amplitude: 0.1
+  
+  # 空間的変換設定
+  spatial:
+    # 空間的影響の減衰率
+    decay_rate: 0.1
+  
+  # 周波数変換設定
+  frequency:
+    # 周波数スケール（目的地IDから周波数を計算する際の除数）
+    frequency_scale: 20
+    
+    # コサイン波振幅
+    cosine_amplitude: 0.05
+  
+  # デフォルト変換設定
+  default:
+    # 基本係数（パターンの基本的な変換スケール）
+    base_factor: 0.8
+    
+    # 強度による影響度
+    intensity_influence: 0.2
+
+# パターン強化設定
+pattern_enhancement:
+  # 特徴量活性化設定
+  feature_activation:
+    # 活性化関数: "tanh", "sigmoid", "relu", "linear"
+    function: "tanh"
+    
+    # 符号を保持するか（負の値も保持）
+    preserve_sign: true
+  
+  # コンテキスト結合設定
+  context_merging:
+    # 元のタグを保持するか
+    preserve_original_tags: true
+    
+    # 強化処理のタイムスタンプを追加するか
+    add_enhancement_timestamp: true
+
+# フォールバック設定
+fallback:
+  # フォールバック時のベクトル減衰係数
+  decay_factor: 0.8
+  
+  # デフォルトベクトルサイズ
+  default_vector_size: 10
+  
+  # デフォルトベクトル値
+  default_vector_value: 0.1
+
+# デバッグ・ログ設定
+debug:
+  # 詳細ログの出力レベル
+  # 0: なし, 1: エラーのみ, 2: 警告含む, 3: 情報含む, 4: デバッグ含む
+  log_level: 2
+  
+  # パターン認識の統計情報出力フラグ
+  output_statistics: false
+  
+  # パフォーマンス測定フラグ
+  measure_performance: false
+
+# パフォーマンス設定
+performance:
+  # パターン認識のタイムアウト時間（ミリ秒）
+  pattern_recognition_timeout_ms: 500
+  
+  # パターン変換のタイムアウト時間（ミリ秒）
+  transformation_timeout_ms: 300
+  
+  # キャッシュサイズ（最近使用したパターンの保持数）
+  cache_size: 50

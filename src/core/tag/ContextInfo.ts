@@ -1,5 +1,6 @@
 import { Tag } from './Tag';
 import { Context } from './Context';
+import { Statistics } from './Statistics';
 
 /**
  * コンテキスト情報クラス
@@ -11,7 +12,7 @@ import { Context } from './Context';
  */
 export class ContextInfo<T extends Context> {
   private readonly _tags: Set<Tag>;
-  private readonly _statistics: Map<string, number>;
+  private readonly _statistics: Statistics;
   private readonly _body: T;
 
   /**
@@ -19,16 +20,16 @@ export class ContextInfo<T extends Context> {
    * 
    * @param body - 本体データ
    * @param tags - タグの集合（省略時は空のSet）
-   * @param statistics - 統計情報（省略時は空のMap）
+   * @param statistics - 統計情報（省略時は空のStatistics）
    */
   constructor(
     body: T,
     tags: ReadonlySet<Tag> = new Set(),
-    statistics: Map<string, number> = new Map()
+    statistics: Statistics = new Statistics()
   ) {
     this._body = body;
     this._tags = new Set(tags);
-    this._statistics = new Map(statistics);
+    this._statistics = statistics instanceof Statistics ? statistics.clone() : statistics;
   }
 
   /**
@@ -48,7 +49,7 @@ export class ContextInfo<T extends Context> {
   /**
    * 統計情報を取得（読み取り専用）
    */
-  get statistics(): ReadonlyMap<string, number> {
+  get statistics(): Statistics {
     return this._statistics;
   }
 
@@ -70,15 +71,15 @@ export class ContextInfo<T extends Context> {
   }
 
   /**
-   * 統計情報を更新した新しいContextInfoを生成
+   * 数値統計を更新した新しいContextInfoを生成
    * 
    * @param key - 統計キー
    * @param value - 統計値
    * @returns 新しい ContextInfo インスタンス
    */
   updateStatistic(key: string, value: number): ContextInfo<T> {
-    const newStatistics = new Map(this._statistics);
-    newStatistics.set(key, value);
+    const newStatistics = this._statistics.clone();
+    newStatistics.setNumber(key, value);
     
     return new ContextInfo(
       this._body,
@@ -88,13 +89,41 @@ export class ContextInfo<T extends Context> {
   }
 
   /**
-   * 指定されたキーの統計値を取得
+   * 真偽値統計を更新した新しいContextInfoを生成
+   * 
+   * @param key - 統計キー
+   * @param value - 真偽値
+   * @returns 新しい ContextInfo インスタンス
+   */
+  updateBooleanStatistic(key: string, value: boolean): ContextInfo<T> {
+    const newStatistics = this._statistics.clone();
+    newStatistics.setBoolean(key, value);
+    
+    return new ContextInfo(
+      this._body,
+      this._tags,
+      newStatistics
+    );
+  }
+
+  /**
+   * 指定されたキーの数値統計を取得
    * 
    * @param key - 統計キー
    * @returns 統計値（存在しない場合は undefined）
    */
   getStatistic(key: string): number | undefined {
-    return this._statistics.get(key);
+    return this._statistics.getNumber(key);
+  }
+
+  /**
+   * 指定されたキーの真偽値統計を取得
+   * 
+   * @param key - 統計キー
+   * @returns 真偽値（存在しない場合は undefined）
+   */
+  getBooleanStatistic(key: string): boolean | undefined {
+    return this._statistics.getBoolean(key);
   }
 
   /**
@@ -116,6 +145,6 @@ export class ContextInfo<T extends Context> {
    * 文字列表現を取得
    */
   toString(): string {
-    return `ContextInfo[tags=${this._tags.size}, statistics=${this._statistics.size}]`;
+    return `ContextInfo[tags=${this._tags.size}, statistics=${this._statistics.size()}]`;
   }
 }

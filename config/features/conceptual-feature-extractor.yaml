@@ -1,0 +1,163 @@
+# 概念層特徴抽出器設定ファイル
+# ConceptualFeatureExtractor の動作パラメータを定義
+
+# メタ情報
+meta:
+  version: "1.0.0"
+  description: "概念層における特徴抽出の設定パラメータ"
+  last_updated: "2025-01-12"
+  author: "Predictive Code AI Team"
+
+# 特徴量の信頼度設定 (0.0 - 1.0の範囲)
+confidence_scores:
+  # ベクトル特徴量の基本信頼度
+  # 概念レベルでのベクトル表現の信頼性
+  vector_feature: 0.8
+  
+  # 統計特徴量の基本信頼度  
+  # コンテキストの統計情報から抽出される特徴の信頼性
+  statistical_feature: 0.7
+  
+  # タグ特徴量の基本信頼度
+  # タグ情報に基づく特徴の信頼性（主観的要素が多いため低め）
+  tag_feature: 0.6
+  
+  # 概念固有特徴の基本信頼度
+  # 抽象化度や複雑度などの概念レベル特有の特徴
+  conceptual_feature: 0.5
+  
+  # フォールバック特徴の信頼度
+  # エラー時や不正な入力時に使用される安全な特徴
+  fallback_feature: 0.1
+
+# 抽象化処理パラメータ
+abstraction:
+  # 重要な特徴判定の閾値
+  # この値を超える特徴を「重要」として扱い強調処理を行う
+  significance_threshold: 0.3
+  
+  # 基本抽象化係数
+  # ベクトル値に適用される基本的な減衰係数（概念化による抽象化）
+  abstraction_factor: 0.9
+  
+  # 重要特徴の強調係数
+  # 重要と判定された特徴に適用される増幅係数
+  emphasis_factor: 1.2
+  
+  # スムージング係数
+  # ノイズ除去とスムージングに使用される係数
+  smoothing_factor: 0.9
+  
+  # ノイズ除去の強度
+  # ノイズ除去処理の強度パラメータ
+  denoise_strength: 0.1
+  
+  # 隣接要素の影響度
+  # 空間的相関を考慮する際の隣接要素の重み
+  neighbor_influence: 0.1
+
+# 複雑度計算の重みパラメータ
+complexity_weights:
+  # タグ数による複雑度への影響度
+  # タグ数が多いほど概念的に複雑と判定
+  tag_weight: 0.1
+  
+  # 統計情報数による複雑度への影響度
+  # 統計情報が多いほど複雑な概念と判定
+  statistics_weight: 0.05
+  
+  # 次元数による複雑度への影響度（対数スケール）
+  # 高次元ベクトルは概念的に複雑
+  dimension_weight: 0.1
+  
+  # ベクトル大きさによる複雑度への影響度
+  # ベクトルの大きさが大きいほど概念的に活発
+  magnitude_weight: 0.02
+
+# 抽象化レベル計算パラメータ
+abstraction_level:
+  # 情報量に基づく抽象化レベルの基準値
+  # この値で情報量を除算して抽象化レベルを算出
+  info_scale_factor: 10.0
+  
+  # 最大抽象化レベル
+  # 抽象化レベルの上限値
+  max_level: 1.0
+  
+  # 最小抽象化レベル
+  # 抽象化レベルの下限値  
+  min_level: 0.0
+
+# タグ特徴の処理パラメータ
+tag_processing:
+  # タグ多様性の最小値
+  # タグ多様性計算時の下限値（ゼロ除算対策）
+  min_diversity: 0.01
+  
+  # タグ重み付けの正規化フラグ
+  # タグ重みを正規化するかどうか
+  normalize_weights: true
+  
+  # 希少タグの重み増幅係数
+  # 出現頻度の低いタグの重要度を上げる係数
+  rare_tag_boost: 1.5
+
+# ベクトル処理パラメータ  
+vector_processing:
+  # 最小ベクトル次元数
+  # この次元数未満の場合はパディングを行う
+  min_dimension: 5
+  
+  # 最大ベクトル次元数
+  # この次元数を超える場合は次元削減を行う
+  max_dimension: 100
+  
+  # 正規化処理の有効化フラグ
+  # ベクトル正規化を行うかどうか
+  enable_normalization: true
+  
+  # ゼロベクトル判定の閾値
+  # この値未満の大きさのベクトルをゼロベクトルと判定
+  zero_vector_threshold: 1e-10
+
+# デバッグ・ログ設定
+debug:
+  # 詳細ログの出力レベル
+  # 0: なし, 1: エラーのみ, 2: 警告含む, 3: 情報含む, 4: デバッグ含む
+  log_level: 2
+  
+  # 特徴抽出の統計情報出力フラグ
+  # 抽出された特徴の統計情報をログ出力するか
+  output_statistics: false
+  
+  # パフォーマンス測定フラグ
+  # 処理時間の測定と出力を行うか
+  measure_performance: false
+
+# フォールバック設定
+fallback:
+  # フォールバック特徴のベクトル次元数
+  default_dimension: 5
+  
+  # フォールバック特徴の初期値
+  default_value: 0.1
+  
+  # エラー発生時のリトライ回数
+  max_retry_attempts: 2
+  
+  # エラー許容度（連続エラー数の上限）
+  error_tolerance: 5
+
+# パフォーマンス設定
+performance:
+  # 特徴抽出のタイムアウト時間（ミリ秒）
+  extraction_timeout_ms: 1000
+  
+  # キャッシュサイズ（最近使用した特徴の保持数）
+  cache_size: 100
+  
+  # バッチ処理のサイズ
+  batch_size: 10
+  
+  # 並列処理の有効化フラグ
+  enable_parallel_processing: false

@@ -7,10 +7,10 @@ import { L2Distance } from '../metrics/L2Distance';
 import { CosineDistance } from '../metrics/CosineDistance';
 import { VectorizableContext } from '../tag/VectorizableContext';
 import { Tag } from '../tag/Tag';
-import { LearningRatePolicy, UpdateScopePolicy, SkipPolicy } from '../links/PolicyInterfaces';
-import { AdaptiveLearningRate, LearningRateOrigin } from '../learning/AdaptiveLearningRate';
-import { UpdateScope } from '../learning/UpdateScope';
-import { SkipEnum } from '../links/SkipEnum';
+import { Statistics } from '../tag/Statistics';
+import { BaseLearningRatePolicy } from '../links/BaseLearningRatePolicy';
+import { BaseUpdateScopePolicy } from '../links/BaseUpdateScopePolicy';
+import { BaseSkipPolicy } from '../links/BaseSkipPolicy';
 import { RelativeDifference } from '../pattern/RelativeDifference';
 import { LearningSignal } from '../learning/LearningSignalV2';
 
@@ -26,29 +26,11 @@ class MockVectorizableContext implements VectorizableContext {
   }
 }
 
-class MockLearningRatePolicy implements LearningRatePolicy<MockVectorizableContext> {
-  learningRate(_difference: RelativeDifference<MockVectorizableContext>, _context: ContextInfo<MockVectorizableContext>): AdaptiveLearningRate {
-    return new AdaptiveLearningRate(0.1, LearningRateOrigin.MANUAL);
-  }
-  getPolicyName(): string { return 'MockLearningRatePolicy'; }
-  isValid(): boolean { return true; }
-}
-
-class MockUpdateScopePolicy implements UpdateScopePolicy<MockVectorizableContext> {
-  scope(_difference: RelativeDifference<MockVectorizableContext>, _context: ContextInfo<MockVectorizableContext>): UpdateScope {
-    return new UpdateScope(new Set(['all']));
-  }
-  getPolicyName(): string { return 'MockUpdateScopePolicy'; }
-  isValid(): boolean { return true; }
-}
-
-class MockSkipPolicy implements SkipPolicy<MockVectorizableContext> {
-  judgeSkip(_difference: RelativeDifference<MockVectorizableContext>): SkipEnum {
-    return SkipEnum.PartialUpdate;
-  }
-  getPolicyName(): string { return 'MockSkipPolicy'; }
-  isValid(): boolean { return true; }
-}
+// Mockポリシークラスは本番のBase*Policy実装に置き換えられました
+// 以下のクラスがMockの代わりに使用されます:
+// - BaseLearningRatePolicy<MockVectorizableContext>
+// - BaseUpdateScopePolicy<MockVectorizableContext> 
+// - BaseSkipPolicy<MockVectorizableContext>
 
 
 describe('SD-01: 概念→パターンの基本往復', () => {
@@ -69,16 +51,16 @@ describe('SD-01: 概念→パターンの基本往復', () => {
       ? new L2Distance()
       : new L2Distance(); // TODO: モックメトリクスがあれば切り替え
     
-    // ポリシーの切り替え
+    // ポリシーの切り替え（Mockから本番実装のBase*Policyに変更）
     const learningRatePolicy = DevelopOption.isUseRealImplementation_SD_01_policies
-      ? new MockLearningRatePolicy() // TODO: 本番実装があれば切り替え
-      : new MockLearningRatePolicy();
+      ? new BaseLearningRatePolicy<MockVectorizableContext>()
+      : new BaseLearningRatePolicy<MockVectorizableContext>(); // 本番実装を使用
     const updateScopePolicy = DevelopOption.isUseRealImplementation_SD_01_policies
-      ? new MockUpdateScopePolicy() // TODO: 本番実装があれば切り替え
-      : new MockUpdateScopePolicy();
+      ? new BaseUpdateScopePolicy<MockVectorizableContext>()
+      : new BaseUpdateScopePolicy<MockVectorizableContext>(); // 本番実装を使用
     const skipPolicy = DevelopOption.isUseRealImplementation_SD_01_policies
-      ? new MockSkipPolicy() // TODO: 本番実装があれば切り替え
-      : new MockSkipPolicy();
+      ? new BaseSkipPolicy<MockVectorizableContext>()
+      : new BaseSkipPolicy<MockVectorizableContext>(); // 本番実装を使用
     
     // リンクの作成
     const link = DevelopOption.isUseRealImplementation_SD_01_link
@@ -100,13 +82,19 @@ describe('SD-01: 概念→パターンの基本往復', () => {
         );
 
     // 2. 期待パターン生成
-    const contextForExpected = new ContextInfo(new MockVectorizableContext([0.1, 0.2, 0.3]), new Set([Tag.create('test')]), new Map());
+    const contextForExpected = new ContextInfo(new MockVectorizableContext([0.1, 0.2, 0.3]), new Set([Tag.create('test')]), new Statistics());
     const expectedPattern = conceptLayer.generateExpectedPattern('pattern1', contextForExpected);
     console.log('生成された期待パターン:', expectedPattern);
 
-    // 3. 実際パターン観測
-    const actualPatternBody = new MockVectorizableContext([0.15, 0.25, 0.35]);
-    const contextForActual = new ContextInfo(actualPatternBody, new Set([Tag.create('actual')]), new Map());
+    // 3. 実際パターン観測 - 期待パターンと同じ次元になるよう調整
+    const expectedDimension = expectedPattern.contextInfo.body.getDimension();
+    const actualVector = [0.15, 0.25, 0.35];
+    // 期待パターンの次元に合わせて実際パターンを調整
+    while (actualVector.length < expectedDimension) {
+      actualVector.push(actualVector[actualVector.length - 1] * 0.9); // 最後の値を減衰させて追加
+    }
+    const actualPatternBody = new MockVectorizableContext(actualVector.slice(0, expectedDimension));
+    const contextForActual = new ContextInfo(actualPatternBody, new Set([Tag.create('actual')]), new Statistics());
     const actualPattern = new ActualPatternV2(contextForActual);
     patternLayer.observeActualPattern(actualPattern);
     console.log('観測された実際パターン:', actualPattern);
@@ -127,7 +115,7 @@ describe('SD-01: 概念→パターンの基本往復', () => {
         expect(true).toBe(true);
       } catch (error) {
         console.error('テスト実行中にエラーが発生しました:', error);
-        fail(error);
+        throw error;
       }
     });
   });
